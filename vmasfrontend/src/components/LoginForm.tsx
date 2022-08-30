@@ -1,77 +1,85 @@
 import  Input from './common/Input';
 import React, {useRef, useState, useEffect, useContext} from 'react';
-import AuthContext from '../context/AuthProvider';
+import Alert from 'react-bootstrap/Alert';
 import axios from '../api/axios';
 import { AxiosError } from 'axios';
+import Button from 'react-bootstrap/Button';
+import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
 
 
 const LOGIN_URL = 'login/';
 
 const LoginForm = () => {
-    // const { setAuth } = useContext(AuthContext)
-    const errRef = useRef<any>();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [errMsg, setErrMsg] = useState('');
-    const [success, setSuccess] = useState(false);
+    const [errResponse, setErrResponse] = useState('');
 
-    useEffect(() => {
-        setErrMsg('');
-    }, [username, password])
-
-    const handleSubmit = async (e : React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const respone = await axios.post(LOGIN_URL, JSON.stringify({username, password}))
-            const user_id = respone?.data?.id;
-            const roles = respone?.data?.roles;
-            const user_detail = respone?.data?.user_detail;
-            // setAuth({username, password, roles, user_detail, user_id})
-            console.log(respone.data)
-            setUsername('');
-            setPassword('');
-            setSuccess(true)
-        } catch (error ) {
-            const err = error as AxiosError
-            if (!err?.response) {
-                setErrMsg('No server Response')
-            } else if (err.response?.status === 400) {
-                setErrMsg('Missing Username or Passowrd');
-            } else if (err.response?.status === 401) {
-                setErrMsg('Unauthorized')
-            } else {
-                setErrMsg('Login Failed')
+    const [validated, setValidated] = useState(false);
+    const handleSubmit = async (event : any) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        if (form.checkValidity() === false) {
+            event.stopPropagation();
+        } else {
+            try {
+                const respone = await axios.post(LOGIN_URL, JSON.stringify({username, password}))
+                const user_id = respone?.data?.id;
+                const roles = respone?.data?.roles;
+                const user_detail = respone?.data?.user_detail;
+                console.log(respone.data)
+                setUsername('');
+                setPassword('');
+            } catch (error ) {
+                const err = error as AxiosError
+                if (!err?.response) {
+                    setErrResponse('No server Response')
+                } else if (err.response?.status === 400) {
+                    setErrResponse('Missing Username or Passowrd');
+                } else if (err.response?.status === 401) {
+                    setErrResponse('Unauthorized')
+                } else {
+                    setErrResponse('Login Failed')
+                }
             }
         }
-    }
+        setValidated(true);
+      };
 
     return (
-        <section>
-            <h1>Login Form</h1>
-            <form onSubmit={handleSubmit}>
-                <Input 
-                    name='username' 
-                    label='Username' 
-                    type='text' 
-                    onChange={(e : React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
-                    placeHolder={'Enter the Username'}
-                    value={username}
-                    required={true}
-                />
-                <Input 
-                    name='password' 
-                    label='Password' 
-                    type='password' 
-                    onChange={(e : React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                    placeHolder={'Enter the Password'}
-                    value={password}
-                    required={true}
-                />
-            <button type="submit" className="btn btn-primary mt-3">Submit</button>
-            </form>
-            
-            {errMsg && <div className='alert alert-danger' aria-live='assertive' ref={errRef}>{errMsg}</div>}
-        </section>
+        <>
+            { errResponse &&  <Alert variant='danger'>{errResponse}</Alert>}
+            <Form noValidate validated={validated} onSubmit={handleSubmit}>
+                <Form.Group as={Col} md="4" controlId="loginform">
+                    <Form.Label>Username</Form.Label>
+                    <InputGroup hasValidation>
+                        <Form.Control
+                            type="text"
+                            name='username'
+                            placeholder="Username"
+                            aria-describedby="inputGroupPrepend"
+                            onChange={ e => {setUsername(e.target.value)}}
+                            required
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            Please Provide a Username
+                        </Form.Control.Feedback>
+                    </InputGroup>
+                    <Form.Label>Password</Form.Label>
+                    <Form.Control 
+                        name='password' 
+                        type="password" 
+                        placeholder="Password"
+                        onChange={ e => {setPassword(e.target.value)}}
+                        required />
+                    <Form.Control.Feedback type="invalid">
+                        Please Provide a Password
+                    </Form.Control.Feedback>
+                </Form.Group>
+                <Button type="submit">Login</Button>
+        </Form>
+    </>
     );
 }
 
