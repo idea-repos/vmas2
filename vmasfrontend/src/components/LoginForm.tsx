@@ -1,5 +1,4 @@
-import  Input from './common/Input';
-import React, {useRef, useState, useEffect, useContext} from 'react';
+import React, {useState} from 'react';
 import Alert from 'react-bootstrap/Alert';
 import axios from '../api/axios';
 import { AxiosError } from 'axios';
@@ -7,7 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-
+import { useNavigate } from 'react-router-dom';
 
 const LOGIN_URL = 'login/';
 
@@ -15,6 +14,7 @@ const LoginForm = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errResponse, setErrResponse] = useState('');
+    let navigate = useNavigate();
 
     const [validated, setValidated] = useState(false);
     const handleSubmit = async (event : any) => {
@@ -28,20 +28,18 @@ const LoginForm = () => {
                 const user_id = respone?.data?.id;
                 const roles = respone?.data?.roles;
                 const user_detail = respone?.data?.user_detail;
-                console.log(respone.data)
-                setUsername('');
-                setPassword('');
+                navigate('/home');
             } catch (error ) {
                 const err = error as AxiosError
                 if (!err?.response) {
-                    setErrResponse('No server Response')
-                } else if (err.response?.status === 400) {
-                    setErrResponse('Missing Username or Passowrd');
+                    setErrResponse('Server Down Please Try Again Later')
                 } else if (err.response?.status === 401) {
-                    setErrResponse('Unauthorized')
+                    setErrResponse('Given Credential Is Not Correct')
                 } else {
                     setErrResponse('Login Failed')
                 }
+                setUsername('')
+                setPassword('')
             }
         }
         setValidated(true);
@@ -57,6 +55,7 @@ const LoginForm = () => {
                         <Form.Control
                             type="text"
                             name='username'
+                            value={username}
                             placeholder="Username"
                             aria-describedby="inputGroupPrepend"
                             onChange={ e => {setUsername(e.target.value)}}
@@ -71,6 +70,7 @@ const LoginForm = () => {
                         name='password' 
                         type="password" 
                         placeholder="Password"
+                        value={password}
                         onChange={ e => {setPassword(e.target.value)}}
                         required />
                     <Form.Control.Feedback type="invalid">
