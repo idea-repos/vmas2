@@ -51,7 +51,7 @@ class LoginSerializer(serializers.Serializer):
             #     raise serializers.ValidationError(msg, code='authorization')
         else:
             msg = 'Both "username" and "password" are required.'
-            raise serializers.ValidationError(msg, code='authorization')
+            raise serializers.ValidationError(msg, code='Invalid input')
         # We have a valid user, put it in the serializer's validated_data.
         # It will be used in the view.
         attrs['user'] = user

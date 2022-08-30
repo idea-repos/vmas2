@@ -1,4 +1,4 @@
-from ast import Add
+import json
 from xmlrpc.client import ResponseError
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
@@ -22,18 +22,18 @@ class LoginView(APIView):
     @method_decorator(csrf_exempt)
     def post(self, request, format=None):
         print("inside post method")
-        serializer = LoginSerializer(data=self.request.data,
+        data = json.loads(request.body.decode('utf-8'))
+        print(data)
+        serializer = LoginSerializer(data=data,
             context={ 'request': self.request })
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        print(("User Authenticated."))
-        login(request, user)
-        print("After login request.")
-        return Response("User Autenticated", status=status.HTTP_202_ACCEPTED)
-      
-    def get(self, request, format=None):
-        print(request.method)
-        return Response("Get Request", status=status.HTTP_200_OK)                
+        serializer.is_valid(raise_exception=False)
+        if serializer.errors:
+           return Response("Access denied: wrong username or password",status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            user = serializer.validated_data['user']
+            print(("User Authenticated."))
+            login(request, user)
+            return Response("User Autenticated", status=status.HTTP_202_ACCEPTED)               
                         
 class GroupAddUpdateDelete(ModelViewSet):    
     serializer_class = GroupSerializer

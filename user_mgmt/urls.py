@@ -11,7 +11,3 @@ urlpatterns = [
     path('api/', include(router.urls)),
 ]
 
-# urlpatterns = [
-#     path('',GroupList.as_view(),name="group_list"),
-#     path('addgroup/',AddGroup.as_view(), name="group_add"),
-# ]
