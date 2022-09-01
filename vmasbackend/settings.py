@@ -73,6 +73,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'vmasbackend.wsgi.application'
+AUTH_USER_MODEL  = 'user_mgmt.MyUser'
 
 
 # Database

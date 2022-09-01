@@ -1,15 +1,34 @@
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
-from .models import Group, Myuser
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import Group
+from .models import GroupExtended
 
 class GroupSerializer(serializers.ModelSerializer):
+    
+    reports_to = serializers.SerializerMethodField('get_reports_to')
+    
+    def get_reports_to(self, objGroup):
+        global reports_to
+        
+        try:
+            reports_to_id = GroupExtended.objects.get(group_id=objGroup.id).ofc_reports_to
+        except ObjectDoesNotExist:
+            return ""
+    
+        if reports_to_id is None:
+            return ""
+        else:
+            reports_to = Group.objects.get(id=reports_to_id).name
+            return reports_to
+        
     class Meta:
         model = Group
-        fields = ["id", "name"]
-       # read_only_fields = ["created_by"]
+        fields = ["id", "name", "reports_to"]
 
-    def create(self,validated_data):
-        return Group.objects.create(**validated_data)
+    # def create(self,validated_data):
+    #     print("Inside Create method of serializer.")
+    #     return Group.objects.create(**validated_data)
     
 
 class LoginSerializer(serializers.Serializer):
@@ -37,22 +56,15 @@ class LoginSerializer(serializers.Serializer):
         password = attrs.get('password')
 
         print(username, password)
-        if username and password:
-            try:
-                 user = Myuser.objects.get(username=username,password=password)         
-            # user = authenticate(request=self.context.get('request'),
-            #                     username=username, password=password)
-            except ObjectDoesNotExist:
-                msg = 'Access denied: wrong username or password.'
-                raise serializers.ValidationError(msg, code='authorization')
-            # if not user:
-            #     # If we don't have a regular user, raise a ValidationError
-            #     msg = 'Access denied: wrong username or password.'
-            #     raise serializers.ValidationError(msg, code='authorization')
+        if username and password:        
+                user = authenticate(request=self.context.get('request'),
+                                username=username, password=password)
+                if not user:
+                    # If we don't have a regular user, raise a ValidationError
+                    msg = 'Access denied: wrong username or password.'
+                    raise serializers.ValidationError(msg, code='authorization')
         else:
             msg = 'Both "username" and "password" are required.'
             raise serializers.ValidationError(msg, code='Invalid input')
-        # We have a valid user, put it in the serializer's validated_data.
-        # It will be used in the view.
         attrs['user'] = user
         return attrs
