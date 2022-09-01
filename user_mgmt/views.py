@@ -104,7 +104,7 @@ class GroupAddUpdateDelete(ModelViewSet):
             return Response("Invalid data. Please check the input.",status=status.HTTP_400_BAD_REQUEST) 
         
     def destroy(self,request,pk=None,*args,**kwargs):
-        instance = self.get_object()
+        # instance = self.get_object()
         super(GroupAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
         return Response("Role Deleted Successfully.", status=status.HTTP_200_OK)
 
