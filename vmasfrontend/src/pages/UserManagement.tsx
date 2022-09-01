@@ -6,6 +6,7 @@ import _ from 'lodash';
 import { paginate } from '../utils/paginate';
 import { useState } from 'react';
 import PageBar from '../components/common/PageBar';
+import SearchBox from '../components/common/SearchBox';
 
 
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
@@ -17,6 +18,7 @@ function UserManagement() {
     const [users, setUsers] = useState<user[]>([]);
     const [pageSize, setPageSize] = useState<number>(5);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [searchQuery, setSearchQuery] = useState('');
     const [sortColumn, setSortColumn] = useState<sortColumn>({path:'username', order:"asc"});
 
     const handlePageChange = (page:number) : void => {
@@ -25,18 +27,30 @@ function UserManagement() {
 
     const handleSort = (sortColumn : sortColumn) => {
         setSortColumn(sortColumn)
-     }
+    }
+
+    const handleSearch = (query : string) => {
+        setSearchQuery(query)
+        setCurrentPage(1)
+    }
 
     useEffect(() => {
         const getUsers = async () => {
             const {data} = await axios.get(GET_USERS_URL)
+            console.log(data)
             setUsers(data)
         }
-        getUsers()        
+        getUsers();
     })
 
     const getPageData = () => {
-        const sorted = _.orderBy(users, [sortColumn.path], [sortColumn.order]);
+        let filtered = users;
+        
+        if (searchQuery) {
+            filtered = users.filter(user => user.username.toLowerCase().startsWith(searchQuery.toLowerCase()));
+        } 
+
+        const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
         const page_users = paginate(sorted, currentPage, pageSize);
         return {totalCount : sorted.length, data : page_users};
     }
@@ -55,6 +69,7 @@ function UserManagement() {
                     havingChildren={true}>
                         <a className='btn btn-secondary' href='users/create'>Create User</a>
                 </PageBar>
+                <SearchBox value={searchQuery} onChange={handleSearch} />
                 <UsersTable 
                     users = {page_users}
                     onSort={handleSort}
