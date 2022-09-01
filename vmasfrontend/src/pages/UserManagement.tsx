@@ -5,6 +5,7 @@ import Pagination from '../components/common/Pagination';
 import _ from 'lodash';
 import { paginate } from '../utils/paginate';
 import { useState } from 'react';
+import PageBar from '../components/common/PageBar';
 
 
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
@@ -35,11 +36,8 @@ function UserManagement() {
     })
 
     const getPageData = () => {
-
         const sorted = _.orderBy(users, [sortColumn.path], [sortColumn.order]);
-
         const page_users = paginate(sorted, currentPage, pageSize);
-
         return {totalCount : sorted.length, data : page_users};
     }
 
@@ -52,6 +50,11 @@ function UserManagement() {
     return (
         <React.Fragment>
             <div className="container">
+                <PageBar 
+                    title='USER MANAGEMENT'
+                    havingChildren={true}>
+                        <a className='btn btn-secondary' href='users/create'>Create User</a>
+                </PageBar>
                 <UsersTable 
                     users = {page_users}
                     onSort={handleSort}
