@@ -1,81 +1,71 @@
 import axios from '../api/axios';
-import React, { Component } from 'react';
+import React, { Component, useEffect } from 'react';
 import UsersTable, { user } from '../components/UsersTable';
 import Pagination from '../components/common/Pagination';
 import _ from 'lodash';
 import { paginate } from '../utils/paginate';
+import { useState } from 'react';
 
 
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 
-interface UserManagementState {
-    users : user[],
-    pageSize : number,
-    currentPage : number,
-    sortColumn : sortColumn,
-}
+const GET_USERS_URL = 'users/'
 
+function UserManagement() {
 
+    const [users, setUsers] = useState<user[]>([]);
+    const [pageSize, setPageSize] = useState<number>(5);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [sortColumn, setSortColumn] = useState<sortColumn>({path:'username', order:"asc"});
 
-class UserManagement extends Component {
-    GET_USERS_URL = 'users/'
-
-    state : UserManagementState = {
-        users : [],
-        pageSize: 4,
-        currentPage : 1,
-        sortColumn : {path:'username', order:"asc"}
-    }
-    
-    handlePageChange = (page:number) : void => {
-        this.setState({currentPage:page})
+    const handlePageChange = (page:number) : void => {
+        setCurrentPage(page)
     }
 
-    handleSort = (sortColumn : sortColumn) => {
-        this.setState({sortColumn})
+    const handleSort = (sortColumn : sortColumn) => {
+        setSortColumn(sortColumn)
      }
 
-    async componentDidMount () {
-        const {data} = await axios.get('users/')
-        console.log(data)
-        this.setState({users : data})
-    }
-
-    getPageData = () => {
-
-        let {users : allUsers, pageSize, currentPage, sortColumn} = this.state;
-
-        const sorted = _.orderBy(allUsers, [sortColumn.path], [sortColumn.order]);
-
-        const users = paginate(sorted, currentPage, pageSize);
-
-        return {totalCount : sorted.length, data : users};
-    }
-
-    render() : JSX.Element {
-        let {users : allUsers, sortColumn, currentPage, pageSize} = this.state;
-        if (allUsers.length === 0) {
-            return <p>No movies in the database</p>;
+    useEffect(() => {
+        const getUsers = async () => {
+            const {data} = await axios.get(GET_USERS_URL)
+            setUsers(data)
         }
-        let {totalCount, data:users} = this.getPageData()
-        return (
-            <React.Fragment>
-                <div className="container">
-                    <UsersTable 
-                        users = {users}
-                        onSort={this.handleSort}
-                        sortColumn={sortColumn}
-                    />
-                    <Pagination 
-                        itemCount={totalCount} 
-                        pageSize={pageSize} 
-                        onPageChange={this.handlePageChange}
-                        currentPage={currentPage}
-                    />
-                </div>
-            </React.Fragment>
-        )
+        getUsers()        
+    })
+
+    const getPageData = () => {
+
+        const sorted = _.orderBy(users, [sortColumn.path], [sortColumn.order]);
+
+        const page_users = paginate(sorted, currentPage, pageSize);
+
+        return {totalCount : sorted.length, data : page_users};
     }
+
+    if (users.length === 0) {
+        return <p>No movies in the database</p>;
+    }
+    
+    const {totalCount, data : page_users} = getPageData()
+    
+    return (
+        <React.Fragment>
+            <div className="container">
+                <UsersTable 
+                    users = {page_users}
+                    onSort={handleSort}
+                    sortColumn={sortColumn}
+                />
+                <Pagination 
+                    itemCount={totalCount} 
+                    pageSize={pageSize} 
+                    onPageChange={handlePageChange}
+                    currentPage={currentPage}
+                />
+            </div>
+        </React.Fragment>
+    )
 }
 
 export default UserManagement;

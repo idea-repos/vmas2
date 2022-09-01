@@ -7,32 +7,24 @@ interface TableBodyProps {
     columns: any
 }
  
-interface TableBodyState {
-}
- 
-// movie array 
-class TableBody extends React.Component<TableBodyProps, TableBodyState> {
+function TableBody({data, columns} : TableBodyProps) {
     
-    renderCell = (item : any, column : any) => {
+    const renderCell = (item : any, column : any) => {
         if (column.content) return column.content(item);
         return _.get(item, column.path);
     }
 
-    createKey = (item : any, column: any) => {
+    const createKey = (item : any, column: any) => {
         return item._id + (column.path || column.key);
     }
 
-    render() { 
-        const {data, columns} = this.props;
-
-        return ( 
-            <tbody>
-                {data.map((item: any)=> <tr key={item._id}>
-                    {columns.map((column : any) => <td key={this.createKey(item, column)}>{this.renderCell(item, column)}</td>)}
-                </tr>)}
-            </tbody>
-        );
-    }
+    return ( 
+        <tbody>
+            {data.map((item: any)=> <tr key={item._id}>
+                {columns.map((column : any) => <td key={createKey(item, column)}>{renderCell(item, column)}</td>)}
+            </tr>)}
+        </tbody>
+    );
 }
  
 export default TableBody;

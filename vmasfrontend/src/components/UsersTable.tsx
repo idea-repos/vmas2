@@ -11,7 +11,7 @@ export interface user {
     status : string,
 }
 
-interface sortColumn {
+export interface sortColumn {
     path: string,
     order : boolean | "asc" | "desc"
 }
@@ -22,8 +22,7 @@ interface UserTableProps {
     sortColumn : sortColumn;
 }
 
-function UsersTable(props : UserTableProps) {
-
+function UsersTable({users, sortColumn, onSort} : UserTableProps) {
 
     const columns = [
         {
@@ -49,7 +48,6 @@ function UsersTable(props : UserTableProps) {
        }
    ]
 
-        const {users, sortColumn, onSort} = props;
         return (
             <Table 
                 columns={columns} 

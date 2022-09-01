@@ -1,10 +1,19 @@
 import React, {Component} from 'react';
+import { sortColumn } from '../UsersTable';
 import TableBody from './TableBody';
 import TableHeader from './TableHeader';
 
 
-const Table = (props: any) => {
+interface TableProps {
+    columns : any[],
+    sortColumn: sortColumn,
+    onSort : (sortColumn : sortColumn) => void
+    data? : any[]
+}
+
+const Table = (props: TableProps) => {
     const {columns, sortColumn, onSort, data} = props
+    
     return (
         <table className="table">
             <TableHeader 

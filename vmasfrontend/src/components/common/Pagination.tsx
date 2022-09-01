@@ -8,13 +8,7 @@ interface PaginationProps {
     onPageChange : (page : number) => void,
 }
  
-interface PaginationState {
-}
- 
-class Pagination extends React.Component<PaginationProps, PaginationState> {
-    
-    render() { 
-        const {itemCount, pageSize, currentPage, onPageChange} = this.props;
+function Pagination({itemCount, pageSize, currentPage, onPageChange} : PaginationProps) {
         const pageCount = Math.ceil(itemCount / pageSize);
         if (pageCount === 1) return null;
         const pages = _.range(1, pageCount+1);
@@ -23,18 +17,18 @@ class Pagination extends React.Component<PaginationProps, PaginationState> {
                 <nav aria-label="Page navigation example">
                     <ul className="pagination">
                         {pages.map(page => 
-                                        <li 
-                                            key={page} 
-                                            className={(page === currentPage) ? "page-item active":"page-item"}>
-                                            <a 
-                                                onClick={() => onPageChange(page)} 
-                                                className='page-link'>{page}
-                                            </a>
-                                        </li>)}
+                                    <li 
+                                        key={page} 
+                                        className={(page === currentPage) ? "page-item active":"page-item"}>
+                                        <a 
+                                            onClick={() => onPageChange(page)} 
+                                            className='page-link'>{page}
+                                        </a>
+                                    </li>)
+                        }
                     </ul>
                 </nav>
         );
-    }
 }
 
 export default Pagination;
