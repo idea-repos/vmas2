@@ -37,7 +37,6 @@ function UserManagement() {
     useEffect(() => {
         const getUsers = async () => {
             const {data} = await axios.get(GET_USERS_URL)
-            console.log(data)
             setUsers(data)
         }
         getUsers();
