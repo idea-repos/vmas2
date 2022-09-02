@@ -40,7 +40,7 @@ function UserManagement() {
             setUsers(data)
         }
         getUsers();
-    })
+    }, [])
 
     const getPageData = () => {
         let filtered = users;
@@ -68,6 +68,9 @@ function UserManagement() {
                     havingChildren={true}>
                         <a className='btn btn-secondary' href='users/create'>Create User</a>
                 </PageBar>
+                <select className="form-select mt-3 mb-3" value={pageSize} onChange={e => setPageSize(parseInt(e.target.value))}>
+                    {[5, 10, 20].map(page => <option key={page} value={page}>Per Page {page} Items</option>)}
+                </select>
                 <SearchBox value={searchQuery} onChange={handleSearch} />
                 <UsersTable 
                     users = {page_users}
