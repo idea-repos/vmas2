@@ -1,35 +1,29 @@
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import Group
-from .models import GroupExtended
+from .models import MyUser, MyGroup, Permissions
 
 class GroupSerializer(serializers.ModelSerializer):
     
-    reports_to = serializers.SerializerMethodField('get_reports_to')
-    
-    def get_reports_to(self, objGroup):
-        global reports_to
+    users_count = serializers.SerializerMethodField('get_users_count')
         
-        try:
-            reports_to_id = GroupExtended.objects.get(group_id=objGroup.id).ofc_reports_to
-        except ObjectDoesNotExist:
-            return ""
-    
-        if reports_to_id is None:
-            return ""
+    def get_users_count(self, objGroup):
+        global users_count
+        print(objGroup)
+        
+        if hasattr(objGroup,"id"):
+            try:
+                users_count = MyUser.objects.filter(group_id=objGroup.id).count()
+                return users_count
+            except ObjectDoesNotExist:
+                return 0
         else:
-            reports_to = Group.objects.get(id=reports_to_id).name
-            return reports_to
+            return 0
         
     class Meta:
-        model = Group
-        fields = ["id", "name", "reports_to"]
-
-    # def create(self,validated_data):
-    #     print("Inside Create method of serializer.")
-    #     return Group.objects.create(**validated_data)
-    
+        model = MyGroup
+        fields = ["id", "name", "reports_to", "users_count"]
+   
 
 class LoginSerializer(serializers.Serializer):
     """
@@ -68,3 +62,10 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError(msg, code='Invalid input')
         attrs['user'] = user
         return attrs
+    
+    
+class PermissionsSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Permissions
+        fields = ["id", "perms_title", "section"]

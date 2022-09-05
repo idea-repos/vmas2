@@ -1,13 +1,11 @@
+from msilib.schema import Property
 from django.db import models
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
 from django.utils import timezone
 from django.contrib.auth.models import PermissionsMixin
-from django.utils.translation import gettext_lazy as _
 from datetime import datetime
-from django.utils import formats
-from django.contrib.auth.models import Group
 
 class MyUserManager(BaseUserManager):
 
@@ -43,24 +41,25 @@ class MyUserManager(BaseUserManager):
         u.save(using=self._db)
         return u
 
-class MyGroup(Group):
+class Permissions(models.Model):
+    perms_alias = models.CharField(max_length=150)
+    perms_title = models.CharField(max_length=150)
+    section_alias = models.CharField(max_length=150)
+    section = models.CharField(max_length=150)
+    status = models.IntegerField()
 
-    class Meta:
-        proxy = True
+class MyGroup(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+    reports_to = models.ForeignKey('self',on_delete= models.SET_NULL,null=True,blank=True)
+    permissions = models.ManyToManyField(
+        Permissions,
+        verbose_name= ("permissions"),
+        blank=True,
+    )
 
-    def as_dict(self):
-        """
-        Create data for frontend.
-        """
-        return {
-                'id': self.id,
-                'name': self.name,
-                'total_users': Group.objects.get(name=self.name).user_set.count()
-                }
-
-    def myFunction(self):
-        return True
-
+    def __str__(self):
+        return self.name
+    
 class listings:
     try:
         listingRough = list(Group.objects.all().values_list('id', 'name'))
@@ -71,6 +70,7 @@ class listings:
         listing = {}
 
 class MyUser(AbstractBaseUser,PermissionsMixin,listings):
+<<<<<<< Updated upstream
     username = models.CharField(_('user name'), max_length=200, unique=True, blank=True, error_messages={'unique':"This User name already exists."})
     email = models.EmailField(_('email address'))
     is_staff = models.BooleanField(_('staff status'), default=False,
@@ -86,6 +86,17 @@ class MyUser(AbstractBaseUser,PermissionsMixin,listings):
         help_text=_('Designates whether the user can log into this admin '
                     'site.'))
     last_session_updated = models.DateTimeField(_('last session updated'),default=datetime.now)
+=======
+    username = models.CharField(max_length=200, unique=True, blank=True)
+    email = models.EmailField()
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(default=timezone.now)
+    group   = models.OneToOneField(MyGroup, on_delete=models.SET_NULL, null=True)
+    reporting_officer   = models.IntegerField(blank=True, null=True)
+    is_del = models.BooleanField(default=False)
+    last_session_updated = models.DateTimeField(default=datetime.now())
+>>>>>>> Stashed changes
 
     objects = MyUserManager()
 
@@ -93,8 +104,8 @@ class MyUser(AbstractBaseUser,PermissionsMixin,listings):
     REQUIRED_FIELDS = ['email']
 
     def Meta(self):
-        verbose_name = _('MyUser')
-        verbose_name_plural = _('MyUser')
+        verbose_name = ('MyUser')
+        verbose_name_plural = ('MyUser')
 
     def get_full_name(self):
         """
@@ -107,59 +118,16 @@ class MyUser(AbstractBaseUser,PermissionsMixin,listings):
         "Returns the short name for the user."
         return self.username
 
-    def as_dict(self):
-        """
-        Create data for datatables ajax call.
-        """
-        try:
-            rName = self.listing[self.role]
-        except Exception as e:
-            rName = "N/A"
 
-        return {'id': self.id,
-                'username': self.username,
-                'date_joined': formats.date_format(self.date_joined, "SHORT_DATETIME_FORMAT"),
-                'last_login': 'new account' if not self.last_login else formats.date_format(self.last_login, "SHORT_DATETIME_FORMAT"),
-                'status': 'inactive' if self.is_active == 0 else 'active',
-                'role_name': rName
-                }
+# class GroupExtended(models.Model):
+#     #ofc_leads = models.IntegerField(blank=True, null=True)
+#     ofc_reports_to = models.IntegerField(blank=True, null=True)
+#     group = models.ForeignKey(Group,on_delete=models.CASCADE)
 
-class GroupExtended(models.Model):
-    #ofc_leads = models.IntegerField(blank=True, null=True)
-    ofc_reports_to = models.IntegerField(blank=True, null=True)
-    group = models.ForeignKey(Group,on_delete=models.CASCADE)
+class UserPermssions(models.Model):
+    user = models.ForeignKey(MyUser,on_delete=models.CASCADE)
+    permission = models.ForeignKey(Permissions,on_delete=models.CASCADE)
 
-class Permissions(models.Model):
-    perms_alias = models.CharField(max_length=150)
-    perms_title = models.CharField(max_length=150)
-    section_alias = models.CharField(max_length=150)
-    section = models.CharField(max_length=150)
-    status = models.IntegerField()
-
-    class Meta:
-        managed = False
-        db_table = 'permissions'
-
-class UserOperations(models.Model):
-    user_id = models.ForeignKey(MyUser,on_delete=models.CASCADE)
-    assigned_rule = models.CharField(max_length=150)
-    masked_as_operator = models.CharField(max_length=150)
-    masked_operator_rule = models.CharField(max_length=150)
-    masked_as_analyser = models.CharField(max_length=150)
-    masked_analyser_rule = models.CharField(max_length=150)
-    working_as = models.CharField(max_length=1)
-
-    class Meta:
-        managed = False
-        db_table = 'user_operations'
-
-class UserTypes(models.Model):
-    type = models.CharField(max_length=50)
-    type_alias = models.CharField(max_length=50)
-
-    class Meta:
-        managed = False
-        db_table = 'user_types'
 
 # # All permissions models
 # # Reports : Group & Permissions
@@ -289,9 +257,9 @@ class UserTypes(models.Model):
 #         )
 
 
-class LimitUsers(models.Model):
-    user_id = models.CharField(max_length=150)
-    role_id = models.CharField(max_length=50)
-    username = models.CharField(max_length=250)
-    session_id = models.CharField(max_length=250)
-    activity_datetime = models.DateTimeField()
+# class LimitUsers(models.Model):
+#     user_id = models.CharField(max_length=150)
+#     group_id = models.CharField(max_length=50)
+#     username = models.CharField(max_length=250)
+#     session_id = models.CharField(max_length=250)
+#     activity_datetime = models.DateTimeField()

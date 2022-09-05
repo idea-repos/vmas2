@@ -1,14 +1,10 @@
 import json
-from xmlrpc.client import ResponseError
-from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from rest_framework.response import Response
-from rest_framework import serializers
-from rest_framework.renderers import TemplateHTMLRenderer
-from .serializers import LoginSerializer, GroupSerializer
+from .serializers import LoginSerializer, GroupSerializer, PermissionsSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
-from .models import Group, GroupExtended
+from .models import MyGroup, Permissions
 from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -39,12 +35,13 @@ class GroupAddUpdateDelete(ModelViewSet):
     serializer_class = GroupSerializer
     
     def get_queryset(self):
-        groups = Group.objects.all()
+        groups = MyGroup.objects.all()
         return(groups)
         
     def list(self, request):
         print("Inside list")
-        groups = Group.objects.all()
+        groups = MyGroup.objects.all()
+        print(groups)
         return Response(self.serializer_class(groups, many=True).data,
                         status=status.HTTP_200_OK)
         
@@ -63,18 +60,7 @@ class GroupAddUpdateDelete(ModelViewSet):
             if serializer.is_valid():
                 serializer.save()
                 print(serializer.data)
-                group_id = serializer.data['id']
-                # group = get_object_or_404(Group, pk=group_id)
-                group_extended, created = GroupExtended.objects.get_or_create(group_id=group_id)
-            
-                if created:
-                    # reports_to_id = Group.objects.get(name=data['reports_to']).id
-                    # group_extended.ofc_reports_to = reports_to_id
-                    group_extended.ofc_reports_to = data['reports_to']
-                    group_extended.save()
-                else:
-                    return ResponseError("Something went wrong!!!")    
-                                
+                                                
                 return Response("Role Created Successfully.",status=status.HTTP_201_CREATED)
             else:
                 print(serializer.errors)
@@ -94,24 +80,52 @@ class GroupAddUpdateDelete(ModelViewSet):
         serializer = self.serializer_class(instance=instance,data=data)
         
         if serializer.is_valid():
-            serializer.save()
-            group_extended = get_object_or_404(GroupExtended, group_id=pk)
-            group_extended.ofc_reports_to = data['reports_to']
-            group_extended.save()       
+            serializer.save()   
             return Response("Role updated Succesfully",status=status.HTTP_201_CREATED)
         else:
             print(serializer.errors)
             return Response("Invalid data. Please check the input.",status=status.HTTP_400_BAD_REQUEST) 
         
     def destroy(self,request,pk=None,*args,**kwargs):
-        # instance = self.get_object()
         super(GroupAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
         return Response("Role Deleted Successfully.", status=status.HTTP_200_OK)
 
+class PermissionsGetUpdate(ModelViewSet):
+    serializer_class = PermissionsSerializer
+
+    def get_queryset(self):
+        print("Inside get_queryset")
+        permissions = Permissions.objects.all()
+        return(permissions)
+        
+    def list(self, request):
+        print("Inside list")
+        permissions = Permissions.objects.filter(status=1)
+        return Response(self.serializer_class(permissions, many=True).data,
+                        status=status.HTTP_200_OK)
 
 
-
-
-
-
+    def retrieve(self,request, pk=None):
+        print("Inside Retrieve")
+        all_perms = Permissions.objects.filter(status=1).order_by('id').values()
+        print(all_perms)
+        perm_id_list = []
+        group_perm_list = []
+        group_perms = {}
+        
+        groupObj = MyGroup.objects.get(id=pk)
+        groupPerm = groupObj.permissions.all().order_by('id').values()
+        print(groupPerm)
+        for perms in groupPerm:
+            perm_id_list.append(perms['id'])
+            
+        print(perm_id_list)
+        for perm_id in perm_id_list:
+            grp_perms = Permissions.objects.get(id=perm_id) 
+            group_perms['perms_title'] = grp_perms.perms_title
+            group_perms['section'] = grp_perms.section
+        #   print(group_perms.perms_title)
+        # group_perms = self.get_object()
+        return Response(self.serializer_class(group_perms).data, status=status.HTTP_200_OK)
+        # return Response("testing in progress", status=status.HTTP_200_OK)
     
