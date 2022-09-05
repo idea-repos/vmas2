@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-import  Input from './common/Input';
-import React, {useRef, useState, useEffect, useContext} from 'react';
-=======
 import React, {useState} from 'react';
 import Alert from 'react-bootstrap/Alert';
->>>>>>> bootstrap-react
 import axios from '../api/axios';
 import { AxiosError } from 'axios';
 import Button from 'react-bootstrap/Button';
