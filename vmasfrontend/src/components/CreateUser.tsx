@@ -18,7 +18,7 @@ function CreateUser() {
     const [password, setPassword] = useState('');
     const [roles, setRoles] = useState<{id:number, name:string}[]>([]);
     const [userRole, setUserRole] = useState<string>(DEFAULT_USER_ROLE);
-    const [isactive, setIsActive] = useState(true);
+    const [isActive, setIsActive] = useState();
     const [reportingOfficer, setReportingOfficer] = useState(DEFAULT_USER_OFFICER);
     const [allReportingOfficer, setAllReportinOfficer] = useState<{_id:number, username:string}[]>([]);
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,10 +38,10 @@ function CreateUser() {
             const SINGLE_USER_URL = `users/${params_user_id.id}/edit`;
             const getSingleUser = async () => {
                 const {data} = await axios.get(SINGLE_USER_URL)
-                setIsActive(data.status == "active")
                 setUsername(data.username)
+                setIsActive(data.isactive)
                 setUserRole(data.roles)
-                setReportingOfficer(data.officer_name)
+                setReportingOfficer(data.reportingTo)
             }
             getSingleUser();
         }
@@ -83,7 +83,7 @@ function CreateUser() {
         } else {
             const EDIT_USER_URL = `users/${params_user_id.id}/edit/`
             try {
-                const {data} = await axios.post(EDIT_USER_URL, JSON.stringify({username, isactive, userRole, reportingOfficer}))
+                const {data} = await axios.post(EDIT_USER_URL, JSON.stringify({username,isActive ,userRole, reportingOfficer}))
                 console.log(data)
             } catch (e) {
                 const err = e as AxiosError
@@ -124,11 +124,10 @@ function CreateUser() {
                                                         Raw passwords are not stored, so there is no way to see this user's password, but you can change the password using <a href={`../../users/${params_user_id.id}/password/change`} className='link'>this form </a>
                                                     </div>
                                                     <Form.Check
-                                                        defaultChecked={false}
+                                                        defaultChecked={isActive}
                                                         className='mb-3'
                                                         type='checkbox'
                                                         id='active'
-                                                        onChange={e => setIsActive(!(isactive))}
                                                         label='Active: Unselect for deleting accounts.'/> 
                                                 </> :
                                         
