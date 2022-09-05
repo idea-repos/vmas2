@@ -85,7 +85,7 @@ class MyUser(AbstractBaseUser,PermissionsMixin,listings):
     is_del = models.BooleanField(_('is deleted'), default=False,
         help_text=_('Designates whether the user can log into this admin '
                     'site.'))
-    last_session_updated = models.DateTimeField(_('last session updated'),default=datetime.now())
+    last_session_updated = models.DateTimeField(_('last session updated'),default=datetime.now)
 
     objects = MyUserManager()
 
