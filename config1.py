@@ -1,0 +1,7 @@
+MYSQL_USER = 'root'
+MYSQL_PASS = 'admin'
+SECRET_KEY = 'django-insecure-7hox85g48$1sp0vefm%kpfnx4vb)=m)hvo739()b4%!kedx_#5'
+HOST_AT = 'localhost'
+DB_NAME = 'vmasdatabase'
+ENGINE = 'django.db.backends.mysql'
+PORT = '3306'
