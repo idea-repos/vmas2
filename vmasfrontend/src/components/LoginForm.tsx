@@ -1,6 +1,5 @@
 import  Input from './common/Input';
 import React, {useRef, useState, useEffect, useContext} from 'react';
-import AuthContext from '../context/AuthProvider';
 import axios from '../api/axios';
 import { AxiosError } from 'axios';
 

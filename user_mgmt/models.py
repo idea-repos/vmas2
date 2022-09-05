@@ -1,4 +1,3 @@
-from msilib.schema import Property
 from django.db import models
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
@@ -62,7 +61,7 @@ class MyGroup(models.Model):
     
 class listings:
     try:
-        listingRough = list(Group.objects.all().values_list('id', 'name'))
+        listingRough = list(MyGroup.objects.all().values_list('id', 'name'))
         listing = {}
         for i,j in listingRough:
             listing[i] = j
@@ -70,23 +69,6 @@ class listings:
         listing = {}
 
 class MyUser(AbstractBaseUser,PermissionsMixin,listings):
-<<<<<<< Updated upstream
-    username = models.CharField(_('user name'), max_length=200, unique=True, blank=True, error_messages={'unique':"This User name already exists."})
-    email = models.EmailField(_('email address'))
-    is_staff = models.BooleanField(_('staff status'), default=False,
-        help_text=_('Designates whether the user can log into this admin '
-                    'site.'))
-    is_active = models.BooleanField(_('active'), default=True,
-        help_text=_('Designates whether this user should be treated as '
-                    'active. Unselect this instead of deleting accounts.'))
-    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
-    role   = models.IntegerField(_('role'),blank=True, null=True)
-    reporting_officer   = models.IntegerField(_('reporting officer'),blank=True, null=True)
-    is_del = models.BooleanField(_('is deleted'), default=False,
-        help_text=_('Designates whether the user can log into this admin '
-                    'site.'))
-    last_session_updated = models.DateTimeField(_('last session updated'),default=datetime.now)
-=======
     username = models.CharField(max_length=200, unique=True, blank=True)
     email = models.EmailField()
     is_staff = models.BooleanField(default=False)
@@ -95,8 +77,7 @@ class MyUser(AbstractBaseUser,PermissionsMixin,listings):
     group   = models.OneToOneField(MyGroup, on_delete=models.SET_NULL, null=True)
     reporting_officer   = models.IntegerField(blank=True, null=True)
     is_del = models.BooleanField(default=False)
-    last_session_updated = models.DateTimeField(default=datetime.now())
->>>>>>> Stashed changes
+    last_session_updated = models.DateTimeField(default=datetime.now)
 
     objects = MyUserManager()
 
