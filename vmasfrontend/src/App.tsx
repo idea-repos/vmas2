@@ -5,6 +5,7 @@ import Home from './components/Home';
 import UserManagement from './pages/UserManagement';
 import CreateUser from './components/CreateUser';
 import PasswordChange from './pages/PasswordChange';
+import RoleManagement from './pages/RoleManagement';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
               <Route path='/login' element={<LoginForm />} />
               <Route path='/home' element={<Home />} />
               <Route path='/users' element={<UserManagement />} />
+              <Route path='/roles' element={<RoleManagement />} />
               <Route path='/users/create' element={<CreateUser />} />
               <Route path='/users/:id/edit' element={<CreateUser />} />
               <Route path='/users/:id/password/change' element={<PasswordChange />} />

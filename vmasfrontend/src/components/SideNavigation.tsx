@@ -23,7 +23,7 @@ const SideNavigation = ({isOpen, toggleSidebar} : SideNavigationProps) => {
                     </div>
                     <div id="collapseOne" className="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
                         <div className="card-body">
-                            <a href="" className="btn btn-secondary">Rule Management</a>
+                            <a href="/roles" className="btn btn-secondary">Role Management</a>
                         </div>
                     </div>
                 </div>
