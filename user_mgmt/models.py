@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
 from django.utils import timezone
 from django.contrib.auth.models import PermissionsMixin
 from datetime import datetime
+from vmasbackend import settings
 
 class MyUserManager(BaseUserManager):
 
@@ -49,7 +50,7 @@ class Permissions(models.Model):
 
 class MyGroup(models.Model):
     name = models.CharField(max_length=150, unique=True)
-    reports_to = models.ForeignKey('self',on_delete= models.SET_NULL,null=True,blank=True)
+    reports_to = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete= models.SET_NULL,null=True,blank=True)
     permissions = models.ManyToManyField(
         Permissions,
         verbose_name= ("permissions"),
