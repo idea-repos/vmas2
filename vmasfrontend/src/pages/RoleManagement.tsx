@@ -1,7 +1,7 @@
 import axios from '../api/axios';
 import React, { useEffect, useState } from 'react';
 import PageBar from '../components/common/PageBar';
-import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
+import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import CustomModal from '../components/common/CustomModal';
 import { AxiosError } from 'axios';
 import RoleTable, { role } from '../components/RoleTable';
@@ -19,15 +19,20 @@ const NEW_ROLE_ID = 0
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 
 function RoleManagement () {
+
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+
+    const [showDelete, setShowDelete] = useState(false);
+    const handleCloseDelete = () => setShowDelete(false);
+    const handleShowDelete = () => setShowDelete(true);
 
     const [name, setRole] = useState('');
     const [roleId, setRoleId] = useState(NEW_ROLE_ID);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [pageSize, setPageSize] = useState<number>(5);
-    const [allRole, setAllRole] = useState<{id:number, name:string, users_count:number}[]>([]);
+    const [allRole, setAllRole] = useState<role[]>([]);
     const [reports_to, setUserReportTo] = useState(USER_REPORTING_TO)
     const [validated, setValidated] = useState(false);
     const [errResponse, setErrResponse] = useState('');
@@ -68,6 +73,15 @@ function RoleManagement () {
         setValidated(true);
     };
 
+    const handleOnDelete = async (e : React.FormEvent) => {
+        e.preventDefault();
+        const DEL_ROLE_URL = `${GET_ROLES_URL}${roleId}/`;
+        const {data} = await axios.delete(DEL_ROLE_URL);
+        setAllRole(allRole.filter(role => role.id !== roleId))
+        handleCloseDelete()
+        setFlashMessage('Role Deleted');
+    }
+
     const handleSort = (sortColumn : sortColumn) => {
         setSortColumn(sortColumn)
     }
@@ -89,13 +103,18 @@ function RoleManagement () {
         handleShow()
     }
 
+    const openModalOnDelete = (role: role) => {
+        setRoleId(role.id);
+        handleShowDelete();
+    }
+
     useEffect(() => {
         const getRoles = async () => {
             const {data} = await axios.get(GET_ROLES_URL)
             setAllRole(data)
         }
         getRoles();
-    }, [])
+    }, [allRole])
 
     const getPageData = () => {
         let filtered = allRole;
@@ -140,6 +159,7 @@ function RoleManagement () {
                     onSort={handleSort}
                     sortColumn={sortColumn}
                     openModalOnEdit={openModalOnEdit}
+                    openModalOnDelete={openModalOnDelete}
                 />
 
                 <Pagination 
@@ -149,14 +169,27 @@ function RoleManagement () {
                     currentPage={currentPage}
                 />
                 
+                <CustomModal 
+                    havingSave={true}
+                    saveButton={<Button onClick={handleOnDelete} variant="danger">Delete</Button>}
+                    heading='Delete Role'
+                    show={showDelete}
+                    onHide={handleCloseDelete}
+                    >
+                    <Card body>
+                        All users assigned this role will be treated as free users. 
+                        Are your sure  you want to delete the role?
+                    </Card>
+                </CustomModal>
+
                 <CustomModal
                     errMessage={errResponse}
                     heading='Add Role'
                     havingSave={true}
-                    saveButton={<Button form='role-form' variant="primary" type='submit'>Save</Button>}
+                    saveButton={<Button form='role-form-edit' variant="primary" type='submit'>Save</Button>}
                     show={show}
                     onHide={handleClose}>
-                        <Form noValidate id='role-form' validated={validated} onSubmit={handleSubmit}>
+                        <Form noValidate id='role-form-edit' validated={validated} onSubmit={handleSubmit}>
                             <Form.Control
                                 defaultValue={roleId}
                                 type="hidden"

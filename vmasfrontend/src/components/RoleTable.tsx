@@ -20,10 +20,11 @@ interface RoleTableProps {
     onSort : (sortColumn : sortColumn) => void,
     sortColumn : sortColumn;
     openModalOnEdit: (role : role) => void,
+    openModalOnDelete: (role: role) => void,
 }
 
 
-function RoleTable({roles, sortColumn, onSort, openModalOnEdit}:RoleTableProps) {
+function RoleTable({roles, sortColumn, onSort, openModalOnEdit, openModalOnDelete}:RoleTableProps) {
     
     const columns = [
         {
@@ -41,7 +42,7 @@ function RoleTable({roles, sortColumn, onSort, openModalOnEdit}:RoleTableProps) 
             <>
                 <button className='btn btn-primary btn-sm'>Privilege</button>
                 <button onClick={() => openModalOnEdit(role)} className='btn btn-secondary btn-sm mx-1'>Edit</button>
-                <button className='btn btn-danger btn-sm '>Delete</button>
+                <button onClick={() => openModalOnDelete(role)} className='btn btn-danger btn-sm '>Delete</button>
             </>
        }
     ]
