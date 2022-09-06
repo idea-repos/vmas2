@@ -1,7 +1,7 @@
 import axios from '../api/axios';
 import React, { useEffect, useState } from 'react';
 import PageBar from '../components/common/PageBar';
-import { Button, Form, InputGroup } from 'react-bootstrap';
+import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import CustomModal from '../components/common/CustomModal';
 import { AxiosError } from 'axios';
 import RoleTable, { role } from '../components/RoleTable';
@@ -10,6 +10,7 @@ import _ from 'lodash';
 import { paginate } from '../utils/paginate';
 import Pagination from '../components/common/Pagination';
 import Alert  from 'react-bootstrap/Alert';
+import ShowEntries from '../components/common/ShowEntries';
 
 
 const GET_ROLES_URL = '/api/roles/'
@@ -120,12 +121,19 @@ function RoleManagement () {
                         Add Role
                     </Button>
                 </PageBar>
-                {flashMessage && <Alert variant='success'>{flashMessage}</Alert>}
-                <select className="form-select mt-3 mb-3" value={pageSize} onChange={e => setPageSize(parseInt(e.target.value))}>
-                    {[5, 10, 20].map(page => <option key={page} value={page}>Per Page {page} Items</option>)}
-                </select>
                 
-                <SearchBox value={searchQuery} onChange={handleSearch} />
+                {flashMessage && <Alert variant='success'>{flashMessage}</Alert>}
+                
+                <Row>
+                    <Col sm={4}>
+                        <ShowEntries 
+                            pageSize={pageSize} 
+                            handlePageSize={e => setPageSize(parseInt(e.target.value))}/>
+                    </Col>
+                    <Col sm={8}>
+                        <SearchBox value={searchQuery} onChange={handleSearch} />
+                    </Col>
+                </Row>
                 
                 <RoleTable 
                     roles={page_roles}

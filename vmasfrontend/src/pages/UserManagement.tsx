@@ -7,6 +7,9 @@ import { paginate } from '../utils/paginate';
 import { useState } from 'react';
 import PageBar from '../components/common/PageBar';
 import SearchBox from '../components/common/SearchBox';
+import ShowEntries from '../components/common/ShowEntries';
+import { Row } from 'react-bootstrap';
+import Col from 'react-bootstrap/Col';
 
 
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
@@ -68,10 +71,18 @@ function UserManagement() {
                     havingChildren={true}>
                         <a className='btn btn-secondary' href='users/create'>Create User</a>
                 </PageBar>
-                <select className="form-select mt-3 mb-3" value={pageSize} onChange={e => setPageSize(parseInt(e.target.value))}>
-                    {[5, 10, 20].map(page => <option key={page} value={page}>Per Page {page} Items</option>)}
-                </select>
-                <SearchBox value={searchQuery} onChange={handleSearch} />
+
+                <Row>
+                    <Col sm={4}>
+                        <ShowEntries 
+                            pageSize={pageSize} 
+                            handlePageSize={e => setPageSize(parseInt(e.target.value))}/>
+                    </Col>
+                    <Col sm={8}>
+                        <SearchBox value={searchQuery} onChange={handleSearch} />
+                    </Col>
+                </Row>
+                
                 <UsersTable 
                     users = {page_users}
                     onSort={handleSort}
