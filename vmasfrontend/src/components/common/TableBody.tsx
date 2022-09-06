@@ -20,7 +20,7 @@ function TableBody({data, columns} : TableBodyProps) {
 
     return ( 
         <tbody>
-            {data.map((item: any)=> <tr key={item._id}>
+            {data.map((item: any)=> <tr key={item.id}>
                 {columns.map((column : any) => <td key={createKey(item, column)}>{renderCell(item, column)}</td>)}
             </tr>)}
         </tbody>
