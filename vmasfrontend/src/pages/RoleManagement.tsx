@@ -16,12 +16,20 @@ import ShowEntries from '../components/common/ShowEntries';
 const GET_ROLES_URL = '/api/roles/'
 const USER_REPORTING_TO = ''
 const NEW_ROLE_ID = 0
+const DEFAULT_ITEM_PER_PAGE = 5
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 
 function RoleManagement () {
 
     const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
+    
+    const handleClose = () => {
+        setRoleId(NEW_ROLE_ID);
+        setRole('')
+        setUserReportTo(USER_REPORTING_TO)
+        setShow(false)
+    };
+    
     const handleShow = () => setShow(true);
 
     const [showDelete, setShowDelete] = useState(false);
@@ -31,7 +39,7 @@ function RoleManagement () {
     const [name, setRole] = useState('');
     const [roleId, setRoleId] = useState(NEW_ROLE_ID);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [pageSize, setPageSize] = useState<number>(5);
+    const [pageSize, setPageSize] = useState<number>(DEFAULT_ITEM_PER_PAGE);
     const [allRole, setAllRole] = useState<role[]>([]);
     const [reports_to, setUserReportTo] = useState(USER_REPORTING_TO)
     const [validated, setValidated] = useState(false);
@@ -46,29 +54,29 @@ function RoleManagement () {
         if (form.checkValidity() === false) {
             event.stopPropagation();
         } else {
-            const EDIT_ROLE_URL = `${GET_ROLES_URL}${roleId}/`
-            if (roleId === 0) {
-                try {
-                    const {data} = await axios.post(GET_ROLES_URL, JSON.stringify({name, reports_to}));
-                    setFlashMessage('New Role Created');
-                    handleClose()
-                } catch (e) {
-                    const err = e as AxiosError;
-                    if (err.response?.status == 400)
-                        setErrResponse('Role already exists');
-                }
-            } else {
-                try {
-                    const {data} = await axios.put(EDIT_ROLE_URL, JSON.stringify({name, reports_to}));
-                    handleClose()
-                    setFlashMessage('Role Updated');
-                } catch (e) {
-                    const err = e as AxiosError;
-                    if (err.response?.status == 400)
-                        setErrResponse('Role already exists');
-                }
+            try {
+                if (roleId === 0) {
+                        const {data} = await axios.post(GET_ROLES_URL, JSON.stringify({name, reports_to}));
+                        setAllRole([...allRole, data])
+                        setFlashMessage('New Role Created');
+                        handleClose()
+                } else {
+                        const EDIT_ROLE_URL = `${GET_ROLES_URL}${roleId}/`
+                        const {data} = await axios.put(EDIT_ROLE_URL, JSON.stringify({name, reports_to}));
+                        setAllRole(allRole.map(role => {
+                            if (role.id == data.id) {
+                                return data
+                            }
+                            return role
+                        }))
+                        handleClose()
+                        setFlashMessage('Role Updated');
+                    } 
+            } catch (e) {
+                const err = e as AxiosError;
+                if (err.response?.status == 400)
+                    setErrResponse('Role already exists');
             }
-            
         }
         setValidated(true);
     };
@@ -114,7 +122,7 @@ function RoleManagement () {
             setAllRole(data)
         }
         getRoles();
-    }, [allRole])
+    }, [])
 
     const getPageData = () => {
         let filtered = allRole;

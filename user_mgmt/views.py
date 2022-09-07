@@ -61,7 +61,7 @@ class GroupAddUpdateDelete(ModelViewSet):
                 serializer.save()
                 print(serializer.data)
                                                 
-                return Response("Role Created Successfully.",status=status.HTTP_201_CREATED)
+                return Response(serializer.data ,status=status.HTTP_201_CREATED)
             else:
                 print(serializer.errors)
                 return Response("Data not valid. Please check the input.",status=status.HTTP_400_BAD_REQUEST) 
@@ -81,7 +81,7 @@ class GroupAddUpdateDelete(ModelViewSet):
         
         if serializer.is_valid():
             serializer.save()   
-            return Response("Role updated Succesfully",status=status.HTTP_201_CREATED)
+            return Response(serializer.data ,status=status.HTTP_201_CREATED)
         else:
             print(serializer.errors)
             return Response("Invalid data. Please check the input.",status=status.HTTP_400_BAD_REQUEST) 
