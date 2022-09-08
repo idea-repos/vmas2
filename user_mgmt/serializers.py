@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate
-from .models import MyUser, MyGroup, Permissions
+from .models import User, Group, Permission
 
 class GroupSerializer(serializers.ModelSerializer):
     
@@ -13,7 +13,7 @@ class GroupSerializer(serializers.ModelSerializer):
         
         if hasattr(objGroup,"id"):
             try:
-                users_count = MyUser.objects.filter(group_id=objGroup.id).count()
+                users_count = User.objects.filter(group_id=objGroup.id).count()
                 return users_count
             except ObjectDoesNotExist:
                 return 0
@@ -21,7 +21,7 @@ class GroupSerializer(serializers.ModelSerializer):
             return 0
         
     class Meta:
-        model = MyGroup
+        model = Group
         fields = ["id", "name", "reports_to", "users_count"]
    
 
@@ -63,9 +63,58 @@ class LoginSerializer(serializers.Serializer):
         attrs['user'] = user
         return attrs
     
+
+class UserSerializer(serializers.ModelSerializer):
     
-class PermissionsSerializer(serializers.ModelSerializer):
+    user_role = serializers.SerializerMethodField('get_user_role')
+    last_login = serializers.SerializerMethodField('get_last_login')
+    is_active = serializers.SerializerMethodField('get_status')
+        
+    def get_user_role(self, objUser):
+        global user_role
+        
+        if hasattr(objUser,"group_id"):
+            try:
+                user_role = Group.objects.get(id=objUser.group_id).name
+                return user_role
+            except ObjectDoesNotExist:
+                return ""
+        else:
+            return ""
+    
+    def get_last_login(self, objUser):
+        global last_login
+        
+        if hasattr(objUser,"last_login"):
+            if objUser.last_login is not None:
+                return objUser.last_login.strftime("%m/%d/%Y %I:%M %p")
+            else:
+                return "new account"
+    
+    def get_status(self, objUser):
+        global is_active
+        
+        if hasattr(objUser,"is_active"):
+            if objUser.is_active ==  1:
+                return True
+            else:
+                return False
+        
+    class Meta:
+        model = User
+        fields = ["id", "username", "password", "group_id", "last_login", "is_active", "reporting_officer", "user_role"]
+   
+     
+class ReportingOfficerSerializer(serializers.ModelSerializer):
     
     class Meta:
-        model = Permissions
-        fields = ["id", "perms_title", "section"]
+        model = User     
+        fields = ["id", "username"]
+        
+class PermissionSerializer(serializers.ModelSerializer):
+    
+    allowed = serializers.CharField()
+    
+    class Meta:
+        model = Permission
+        fields = ["id", "perms_title", "section", "allowed"]
