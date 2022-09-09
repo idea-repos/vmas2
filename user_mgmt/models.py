@@ -92,7 +92,7 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
     group   = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
-    reporting_officer   = models.IntegerField(blank=True, null=True)
+    reporting_officer   = models.ForeignKey('self', on_delete=models.SET_NULL,blank=True, null=True)
     is_del = models.BooleanField(default=False)
     last_session_updated = models.DateTimeField(default=datetime.now)
     permissions = models.ManyToManyField(

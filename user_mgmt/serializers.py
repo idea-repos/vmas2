@@ -45,7 +45,6 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         # Take username and password from request
-        print("Inside Validate method")
         username = attrs.get('username')
         password = attrs.get('password')
 
@@ -53,7 +52,7 @@ class LoginSerializer(serializers.Serializer):
         if username and password:        
                 user = authenticate(request=self.context.get('request'),
                                 username=username, password=password)
-                if not user:
+                if not user or not user.is_active:
                     # If we don't have a regular user, raise a ValidationError
                     msg = 'Access denied: wrong username or password.'
                     raise serializers.ValidationError(msg, code='authorization')
@@ -68,7 +67,6 @@ class UserSerializer(serializers.ModelSerializer):
     
     user_role = serializers.SerializerMethodField('get_user_role')
     last_login = serializers.SerializerMethodField('get_last_login')
-    is_active = serializers.SerializerMethodField('get_status')
         
     def get_user_role(self, objUser):
         global user_role
@@ -89,20 +87,11 @@ class UserSerializer(serializers.ModelSerializer):
             if objUser.last_login is not None:
                 return objUser.last_login.strftime("%m/%d/%Y %I:%M %p")
             else:
-                return "new account"
-    
-    def get_status(self, objUser):
-        global is_active
-        
-        if hasattr(objUser,"is_active"):
-            if objUser.is_active ==  1:
-                return True
-            else:
-                return False
+                return "new account"        
         
     class Meta:
         model = User
-        fields = ["id", "username", "password", "group_id", "last_login", "is_active", "reporting_officer", "user_role"]
+        fields = ["id", "username", "password", "group", "last_login", "is_active", "reporting_officer", "user_role"]
    
      
 class ReportingOfficerSerializer(serializers.ModelSerializer):

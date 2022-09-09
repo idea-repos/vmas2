@@ -6,8 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from .models import Group, User, Permission
 from rest_framework import status
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login,logout
 
@@ -15,21 +14,21 @@ from django.contrib.auth import login,logout
 # Create your views here.
 class LoginView(APIView):
 
-    @method_decorator(csrf_exempt)
     def post(self, request, format=None):
-        print("inside post method")
-        data = json.loads(request.body.decode('utf-8'))
-        print(data)
-        serializer = LoginSerializer(data=data,
-            context={ 'request': self.request })
-        serializer.is_valid(raise_exception=False)
-        if serializer.errors:
-           return Response("Access denied: wrong username or password",status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            user = serializer.validated_data['user']
-            print(("User Authenticated."))
-            login(request, user)
-            return Response("User Autenticated", status=status.HTTP_202_ACCEPTED)               
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            serializer = LoginSerializer(data=data,
+                context={ 'request': self.request })
+            serializer.is_valid(raise_exception=False)
+            if serializer.errors:
+                return Response("Access denied: wrong username or password",status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                user = serializer.validated_data['user']
+                login(request, user)
+                return Response("User Authenticated", status=status.HTTP_202_ACCEPTED) 
+        except Exception as e:
+            print(e)
+            return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)              
                         
 class GroupAddUpdateDelete(ModelViewSet):    
     serializer_class = GroupSerializer
@@ -39,53 +38,43 @@ class GroupAddUpdateDelete(ModelViewSet):
         return(groups)
         
     def list(self, request):
-        print("Inside list")
         groups = Group.objects.all()
-        print(groups)
         return Response(self.serializer_class(groups, many=True).data,
                         status=status.HTTP_200_OK)
         
     def retrieve(self,request, pk=None):
-        print("Inside Retrieve")
         group = self.get_object()
         return Response(self.serializer_class(group).data, status=status.HTTP_200_OK)
     
     def create(self,request,*args,**kwargs):
-        # print("inside create")
         try:
             data = json.loads(request.body.decode('utf-8'))
-            print(data)
             
             serializer = self.serializer_class(data=data)
             if serializer.is_valid():
-                print(serializer.data)
                 serializer.save()
-                print(serializer.data)
                                                 
-                return Response(serializer.data ,status=status.HTTP_201_CREATED)
+                return Response("Role Created Successfully",status=status.HTTP_201_CREATED)
             else:
-                print(serializer.errors)
-                return Response("Data not valid. Please check the input.",status=status.HTTP_400_BAD_REQUEST) 
+                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
         except Exception as e:
-            print(e)
-            return Response("Exception occured!!!")
+            return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
            
         
     def update(self,request,pk=None,*args,**kwargs):
-        print("inside update")
-        instance = self.get_object()
-        
-        data = json.loads(request.body.decode('utf-8'))
-        print(data)
+        try:
+            instance = self.get_object()       
+            data = json.loads(request.body.decode('utf-8'))
 
-        serializer = self.serializer_class(instance=instance,data=data)
-        
-        if serializer.is_valid():
-            serializer.save()   
-            return Response(serializer.data ,status=status.HTTP_201_CREATED)
-        else:
-            print(serializer.errors)
-            return Response("Invalid data. Please check the input.",status=status.HTTP_400_BAD_REQUEST) 
+            serializer = self.serializer_class(instance=instance,data=data)
+            
+            if serializer.is_valid():
+                serializer.save()   
+                return Response("Role Updated Successfully",status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+        except Exception as e:
+            return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     def destroy(self,request,pk=None,*args,**kwargs):
         super(GroupAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
@@ -101,53 +90,57 @@ class UserAddUpdate(ModelViewSet):
         return(users)
         
     def list(self, request):
-        print("Inside list")
         users = User.objects.all()
         return Response(self.serializer_class(users, many=True).data,
                         status=status.HTTP_200_OK)
         
     def retrieve(self,request, pk=None):
-        print("Inside Retrieve")
         user = self.get_object()
         return Response(self.serializer_class(user).data, status=status.HTTP_200_OK)
     
     def create(self,request,*args,**kwargs):
-        print("inside create")
         try:
             data = json.loads(request.body.decode('utf-8'))
-            print(data)
             
             serializer = self.serializer_class(data=data)
+            
             if serializer.is_valid():
-                serializer.save()
-                print(serializer.data)
-                                                
+                password = make_password(serializer.validated_data.get('password'))
+                serializer.save(password=password)                                      
                 return Response("User Created Successfully.",status=status.HTTP_201_CREATED)
             else:
-                print(serializer.errors)
-                return Response("Data not valid. Please check the input.",status=status.HTTP_400_BAD_REQUEST) 
+                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+            
         except Exception as e:
             print(e)
-            return Response("Exception occured!!!")
+            return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
            
         
     def update(self,request,pk=None,*args,**kwargs):
-        print("inside update")
-        instance = self.get_object()
-        
-        data = json.loads(request.body.decode('utf-8'))
-        print(data)
-
-        serializer = self.serializer_class(instance=instance,data=data)
-        
-        if serializer.is_valid():
-            serializer.save()   
-            return Response("User updated Succesfully",status=status.HTTP_201_CREATED)
-        else:
-            print(serializer.errors)
-            return Response("Invalid data. Please check the input.",status=status.HTTP_400_BAD_REQUEST) 
+        try:
+            instance = self.get_object()
             
-class ReportingOfficersGetUpdate(ModelViewSet):
+            data = json.loads(request.body.decode('utf-8'))
+
+            serializer = self.serializer_class(instance=instance,data=data,partial=True)
+            
+            if serializer.is_valid():
+                if serializer.validated_data.get('password'):
+                    password = make_password(serializer.validated_data.get('password'))
+                    serializer.save(password=password)
+                else:
+                    serializer.save()
+                    
+                return Response("User updated Successfully",status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+            
+        except Exception as e:
+            print(e)
+            return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+            
+class ReportingOfficers(ModelViewSet):
     serializer_class = ReportingOfficerSerializer
     
     def get_queryset(self):
@@ -155,7 +148,6 @@ class ReportingOfficersGetUpdate(ModelViewSet):
         return(users)
     
     def retrieve(self,request, pk=None):
-        print("Inside Retrieve")
         
         reports_to_id = Group.objects.get(id=pk).reports_to_id
         if reports_to_id is None:
