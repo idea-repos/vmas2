@@ -41,27 +41,22 @@ class MyUserManager(BaseUserManager):
         u.save(using=self._db)
         return u
 
+class Section(models.Model):
+    section_name = models.CharField(max_length=200)
+    section_desc = models.CharField(max_length=300)
     
+    class Meta:
+        db_table = 'Sections'
+           
 class Permission(models.Model):
     perms_alias = models.CharField(max_length=150)
     perms_title = models.CharField(max_length=300)
+    section = models.ForeignKey(Section,on_delete=models.SET_NULL,null=True,blank=True,unique=False)
     status = models.IntegerField()
     
     class Meta:
         db_table = 'Permissions'
 
-
-class Section(models.Model):
-    section_name = models.CharField(max_length=200)
-    section_desc = models.CharField(max_length=300)
-    permissions = models.ManyToManyField(
-        Permission,
-        verbose_name= ("permissions"),
-        blank=True,
-    )
-    
-    class Meta:
-        db_table = 'Sections'
         
 class Group(models.Model):
     name = models.CharField(max_length=150, unique=True)
@@ -92,7 +87,7 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
     group   = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True)
-    reporting_officer   = models.ForeignKey('self', on_delete=models.SET_NULL,blank=True, null=True)
+    reporting_officer   = models.ForeignKey('self', on_delete=models.SET_NULL,blank=True, null=True, unique=False)
     is_del = models.BooleanField(default=False)
     last_session_updated = models.DateTimeField(default=datetime.now)
     permissions = models.ManyToManyField(

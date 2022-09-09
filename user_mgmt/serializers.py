@@ -9,7 +9,6 @@ class GroupSerializer(serializers.ModelSerializer):
         
     def get_users_count(self, objGroup):
         global users_count
-        print(objGroup)
         
         if hasattr(objGroup,"id"):
             try:
@@ -48,7 +47,6 @@ class LoginSerializer(serializers.Serializer):
         username = attrs.get('username')
         password = attrs.get('password')
 
-        print(username, password)
         if username and password:        
                 user = authenticate(request=self.context.get('request'),
                                 username=username, password=password)
