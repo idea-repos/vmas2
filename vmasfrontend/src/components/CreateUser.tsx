@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, InputGroup } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import PageBar from './common/PageBar';
 import Container from 'react-bootstrap/Container';
 import axios from '../api/axios';
 import { AxiosError } from 'axios';
 
-const CREATE_USER_URL = 'create-new-user/';
-const GET_ROLES = 'roles/'
-const DEFAULT_USER_ROLE = '4' // Operator 1
+const CREATE_USER_URL = 'api/users/';
+const GET_ROLES = 'api/roles/'
+const DEFAULT_USER_ROLE = '5' // Operator 1
 const DEFAULT_USER_OFFICER = '0' // No one
 
 function CreateUser() {
@@ -17,13 +17,14 @@ function CreateUser() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [roles, setRoles] = useState<{id:number, name:string}[]>([]);
-    const [userRole, setUserRole] = useState<string>(DEFAULT_USER_ROLE);
-    const [isActive, setIsActive] = useState();
-    const [reportingOfficer, setReportingOfficer] = useState(DEFAULT_USER_OFFICER);
-    const [allReportingOfficer, setAllReportinOfficer] = useState<{_id:number, username:string}[]>([]);
+    const [group, setUserRole] = useState<string>(DEFAULT_USER_ROLE);
+    const [is_active, setIsActive] = useState<any>();
+    let [reporting_officer, setReportingOfficer] = useState<string | null>(DEFAULT_USER_OFFICER);
+    const [allReportingOfficer, setAllReportinOfficer] = useState<{id:number, username:string}[]>([]);
     const [confirmPassword, setConfirmPassword] = useState('');
     const [errResponse, setErrResponse] = useState('');
     const [validated, setValidated] = useState(false);
+    let navigate = useNavigate();
 
     useEffect(() => {
         const getRoles = async () => {
@@ -35,27 +36,27 @@ function CreateUser() {
 
     useEffect(() => {
         if (params_user_id?.id != null) {
-            const SINGLE_USER_URL = `users/${params_user_id.id}/edit`;
+            const SINGLE_USER_URL = `api/users/${params_user_id.id}/`;
             const getSingleUser = async () => {
                 const {data} = await axios.get(SINGLE_USER_URL)
                 setUsername(data.username)
-                setIsActive(data.isactive)
-                setUserRole(data.roles)
-                setReportingOfficer(data.reportingTo)
+                setIsActive(data.is_active)
+                setUserRole(data.group)
+                setReportingOfficer(data.reporting_officer)
             }
             getSingleUser();
         }
     }, [params_user_id])
 
     useEffect(() => {
-        const REPORTIN_USER_URL = `reportofficer/${userRole}/role`;
+        const REPORTIN_USER_URL = `api/reportofficer/${group}/`;
         const getAllReportingUsers = async () => {
             const {data} = await axios.get(REPORTIN_USER_URL);
             setAllReportinOfficer(data);
         }
         getAllReportingUsers();
         setReportingOfficer(DEFAULT_USER_OFFICER);
-    }, [userRole])
+    }, [group])
 
     const handleSubmit = async (event : any) => {
         event.preventDefault();
@@ -68,8 +69,8 @@ function CreateUser() {
                 return;
             }
             try {
-                const response = await axios.post(CREATE_USER_URL, JSON.stringify({username, password, userRole, reportingOfficer}))
-                console.log(response.data)
+                const {data} = await axios.post(CREATE_USER_URL, JSON.stringify({username, password, group, reporting_officer}))
+                navigate('/users', {state : {message : data.message}})
             } catch (e) {
                 const err = e as AxiosError
                 if (!err?.response)
@@ -81,10 +82,13 @@ function CreateUser() {
                 }
             }
         } else {
-            const EDIT_USER_URL = `users/${params_user_id.id}/edit/`
+            const EDIT_USER_URL = `api/users/${params_user_id.id}/`
             try {
-                const {data} = await axios.post(EDIT_USER_URL, JSON.stringify({username,isActive ,userRole, reportingOfficer}))
-                console.log(data)
+                if (reporting_officer === '0') {
+                    reporting_officer = null
+                }
+                const {data} = await axios.put(EDIT_USER_URL, JSON.stringify({username,is_active ,group, reporting_officer}))
+                navigate('/users', {state : {message : data.message}})
             } catch (e) {
                 const err = e as AxiosError
                 if (!err?.response) 
@@ -124,7 +128,8 @@ function CreateUser() {
                                                         Raw passwords are not stored, so there is no way to see this user's password, but you can change the password using <a href={`../../users/${params_user_id.id}/password/change`} className='link'>this form </a>
                                                     </div>
                                                     <Form.Check
-                                                        defaultChecked={isActive}
+                                                        defaultChecked={is_active}
+                                                        onChange={e => setIsActive(e.target.value)}
                                                         className='mb-3'
                                                         type='checkbox'
                                                         id='active'
@@ -163,7 +168,7 @@ function CreateUser() {
                     <Form.Group className="mb-3" controlId="roles">
                         <InputGroup>
                             <InputGroup.Text id="inputGroupPrepend">Roles</InputGroup.Text>
-                            <Form.Select value={userRole} onChange={ e => {setUserRole(e.target.value)}}>
+                            <Form.Select value={group} onChange={ e => {setUserRole(e.target.value)}}>
                                 {roles.map(role => <option  key={role.id} value={role.id}>{role.name}</option>)}
                             </Form.Select>
                         </InputGroup>
@@ -172,9 +177,9 @@ function CreateUser() {
                     <Form.Group className="mb-3" controlId="reporting-officer">
                         <InputGroup>
                             <InputGroup.Text id="inputGroupPrepend">Reporting Officer</InputGroup.Text>
-                            <Form.Select value={reportingOfficer} onChange={e => {setReportingOfficer(e.target.value)}}>
+                            <Form.Select value={reporting_officer == null ? '0':reporting_officer} onChange={e => {setReportingOfficer(e.target.value)}}>
                                 <option disabled value='0'></option>
-                                {allReportingOfficer.map(officer => <option key={officer._id} value={officer._id}>{officer.username}</option>)}
+                                {allReportingOfficer.map(officer => <option key={officer.id} value={officer.id}>{officer.username}</option>)}
                             </Form.Select>
                         </InputGroup>
                     </Form.Group>

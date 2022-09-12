@@ -1,5 +1,5 @@
 import axios from '../api/axios';
-import React, { Component, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import UsersTable, { user } from '../components/UsersTable';
 import Pagination from '../components/common/Pagination';
 import _ from 'lodash';
@@ -8,13 +8,14 @@ import { useState } from 'react';
 import PageBar from '../components/common/PageBar';
 import SearchBox from '../components/common/SearchBox';
 import ShowEntries from '../components/common/ShowEntries';
-import { Row } from 'react-bootstrap';
+import { Alert, Row } from 'react-bootstrap';
 import Col from 'react-bootstrap/Col';
+import { useLocation } from 'react-router-dom';
 
 
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 
-const GET_USERS_URL = 'users/'
+const GET_USERS_URL = 'api/users/'
 
 function UserManagement() {
 
@@ -23,6 +24,7 @@ function UserManagement() {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [sortColumn, setSortColumn] = useState<sortColumn>({path:'username', order:"asc"});
+     
 
     const handlePageChange = (page:number) : void => {
         setCurrentPage(page)
@@ -37,10 +39,20 @@ function UserManagement() {
         setCurrentPage(1)
     }
 
+    const {state} : {state:any} = useLocation();
+
     useEffect(() => {
         const getUsers = async () => {
             const {data} = await axios.get(GET_USERS_URL)
-            setUsers(data)
+            const userMani = data.map((user : user) => {
+                if (user.is_active == true) {
+                    user['is_active'] = 'active'
+                } else {
+                    user['is_active'] = 'inactive'
+                }
+                return user
+            })
+            setUsers(userMani)
         }
         getUsers();
     }, [])
@@ -57,10 +69,6 @@ function UserManagement() {
         return {totalCount : sorted.length, data : page_users};
     }
 
-    if (users.length === 0) {
-        return <p>No movies in the database</p>;
-    }
-    
     const {totalCount, data : page_users} = getPageData()
     
     return (
@@ -72,6 +80,8 @@ function UserManagement() {
                         <a className='btn btn-secondary' href='users/create'>Create User</a>
                 </PageBar>
 
+                {state?.message && <Alert variant='success'>{state.message}</Alert>}
+                
                 <Row>
                     <Col sm={4}>
                         <ShowEntries 

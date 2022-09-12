@@ -4,11 +4,12 @@ import Table from './common/Table';
 
 
 export interface user {
-    _id : number;
-    username : string,
-    role : string,
-    lastlogin: Date | string,
-    status : string,
+    id : number;
+    username : string;
+    role : string;
+    lastlogin: Date | string;
+    status : string;
+    is_active: boolean | string;
 }
 
 export interface sortColumn {
@@ -30,21 +31,21 @@ function UsersTable({users, sortColumn, onSort} : UserTableProps) {
             label:'Username'
         },
         {   
-            path:'roles', 
+            path:'user_role', 
             label:'Roles'
         },
         {
-            path:'lastlogin', 
+            path:'last_login', 
             label:'Last Login'
         },
         {   
-            path:'status', 
+            path:'is_active', 
             label:'Status'
         },
         {
             label:'Action',
             key:'edit', 
-            content: (user : user)=><Link to={`/users/${user._id}/edit`}>Edit</Link>
+            content: (user : user)=><Link to={`/users/${user.id}/edit`}>Edit</Link>
        }
    ]
 
