@@ -106,8 +106,8 @@ class UserAddUpdate(ModelViewSet):
             
             if serializer.is_valid():
                 password = make_password(serializer.validated_data.get('password'))
-                serializer.save(password=password)                                      
-                return Response("User Created Successfully.",status=status.HTTP_201_CREATED)
+                serializer.save(password=password)                                     
+                return Response({'user_data': serializer.data, 'message': "User Created Successfully."},status=status.HTTP_201_CREATED)
             else:
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
             
@@ -131,7 +131,7 @@ class UserAddUpdate(ModelViewSet):
                 else:
                     serializer.save()
                     
-                return Response("User updated Successfully",status=status.HTTP_201_CREATED)
+                return Response({'user_data': serializer.data, 'message': "User updated Successfully."},status=status.HTTP_201_CREATED)
             else:
                 return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
             
