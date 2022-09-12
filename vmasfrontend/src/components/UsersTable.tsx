@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Table from './common/Table';
+import { Button } from 'react-bootstrap';
 
 
 export interface user {
@@ -21,9 +22,10 @@ interface UserTableProps {
     users : user[],
     onSort : (sortColumn : sortColumn) => void,
     sortColumn : sortColumn;
+    openModalForDelete: (id : number) => void,
 }
 
-function UsersTable({users, sortColumn, onSort} : UserTableProps) {
+function UsersTable({users, sortColumn, onSort, openModalForDelete} : UserTableProps) {
 
     const columns = [
         {
@@ -45,7 +47,11 @@ function UsersTable({users, sortColumn, onSort} : UserTableProps) {
         {
             label:'Action',
             key:'edit', 
-            content: (user : user)=><Link to={`/users/${user.id}/edit`}>Edit</Link>
+            content: (user : user) =>
+                <>
+                <Button variant='danger' onClick={() => openModalForDelete(user.id)} size='sm'>Delete</Button>
+                <Link className='btn btn-primary btn-sm mx-1' to={`/users/${user.id}/edit`}>Edit</Link>
+                </>
        }
    ]
 

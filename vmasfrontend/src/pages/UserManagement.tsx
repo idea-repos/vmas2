@@ -8,9 +8,10 @@ import { useState } from 'react';
 import PageBar from '../components/common/PageBar';
 import SearchBox from '../components/common/SearchBox';
 import ShowEntries from '../components/common/ShowEntries';
-import { Alert, Row } from 'react-bootstrap';
+import { Alert, Button, Card, Row } from 'react-bootstrap';
 import Col from 'react-bootstrap/Col';
-import { useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import CustomModal from '../components/common/CustomModal';
 
 
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
@@ -18,13 +19,34 @@ interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 const GET_USERS_URL = 'api/users/'
 
 function UserManagement() {
+    const [show, setShow] = useState(false);
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
 
     const [users, setUsers] = useState<user[]>([]);
     const [pageSize, setPageSize] = useState<number>(5);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [searchQuery, setSearchQuery] = useState('');
+    const [userId, setUserId] = useState(0);
     const [sortColumn, setSortColumn] = useState<sortColumn>({path:'username', order:"asc"});
-     
+    const [flashMessage, setFlashMessage] = useState('');
+    
+
+    const handleDelete =  async (value:number) => {
+        const DELETE_USER_URL = `api/users/${userId}`
+        try {
+            const {data} = await axios.delete(DELETE_USER_URL, { data: { hardDelete: value } })
+            setFlashMessage(data.message)
+            setUsers(users.filter(user => user.id !== userId))
+        } catch (e) {
+            console.log('getting errror from backend')
+        }
+    }
+
+    const openModalForDelete = (id:number) => {
+        setUserId(id);
+        handleShow();
+    }
 
     const handlePageChange = (page:number) : void => {
         setCurrentPage(page)
@@ -97,7 +119,9 @@ function UserManagement() {
                     users = {page_users}
                     onSort={handleSort}
                     sortColumn={sortColumn}
+                    openModalForDelete={openModalForDelete}
                 />
+
                 <Pagination 
                     itemCount={totalCount} 
                     pageSize={pageSize} 
@@ -105,6 +129,20 @@ function UserManagement() {
                     currentPage={currentPage}
                 />
             </div>
+
+            <CustomModal 
+                    heading='Delete User'
+                    buttons={[
+                                <Button onClick={() => handleDelete(0)} variant="warning">Soft Delete</Button>,
+                                <Button onClick={() => handleDelete(1)} variant="danger">Hard Delete</Button>]}
+                    show={show}
+                    onHide={handleClose}
+                    >
+                    <Card body>
+                        Deleting User From Database (Go For Hard Delete)
+                        Securing Data Of User (Go For Soft Delete)
+                    </Card>
+            </CustomModal>
         </React.Fragment>
     )
 }

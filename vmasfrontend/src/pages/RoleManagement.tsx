@@ -178,8 +178,7 @@ function RoleManagement () {
                 />
                 
                 <CustomModal 
-                    havingSave={true}
-                    saveButton={<Button onClick={handleOnDelete} variant="danger">Delete</Button>}
+                    buttons={[<Button onClick={handleOnDelete} variant="danger">Delete</Button>]}
                     heading='Delete Role'
                     show={showDelete}
                     onHide={handleCloseDelete}
@@ -193,8 +192,7 @@ function RoleManagement () {
                 <CustomModal
                     errMessage={errResponse}
                     heading='Add Role'
-                    havingSave={true}
-                    saveButton={<Button form='role-form-edit' variant="primary" type='submit'>Save</Button>}
+                    buttons={[<Button form='role-form-edit' variant="primary" type='submit'>Save</Button>]}
                     show={show}
                     onHide={handleClose}>
                         <Form noValidate id='role-form-edit' validated={validated} onSubmit={handleSubmit}>

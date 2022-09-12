@@ -1,29 +1,29 @@
 import React from 'react';
-import { Button, Modal } from 'react-bootstrap';
+import { Alert, Button, Modal } from 'react-bootstrap';
+
 
 interface CustomModal {
     children : any,
-    havingSave?: boolean,
     heading: string,
     show : boolean,
     onHide : () => void,
-    saveButton?: any,
+    buttons?: any[],
     errMessage? :string,
 }
 
-function CustomModal({children, heading, show, onHide, havingSave, saveButton, errMessage} : CustomModal) {
+function CustomModal({children, heading, show, onHide, buttons, errMessage} : CustomModal) {
     return (
         <Modal show={show} onHide={onHide}>
             <Modal.Header closeButton>
             <Modal.Title>{heading}</Modal.Title>
             </Modal.Header>
             <Modal.Body>{children}</Modal.Body>
-            {errMessage && <div className='alert alert-danger'>{errMessage}</div>}
+            {errMessage && <Alert variant='success'>{errMessage}</Alert>}
             <Modal.Footer>
             <Button variant="secondary" onClick={onHide}>
                 Close
             </Button>
-            {havingSave && saveButton}
+            {buttons?.length && buttons?.map((button, index) => <div key={index}>{button}</div>)}
             </Modal.Footer>
         </Modal>
     );
