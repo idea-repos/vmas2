@@ -50,13 +50,13 @@ class GroupAddUpdateDelete(ModelViewSet):
         try:
             data = json.loads(request.body.decode('utf-8'))
             
-            serializer = self.serializer_class(data=data)
-            if serializer.is_valid():
-                serializer.save()
+            newgroup = self.serializer_class(data=data)
+            if newgroup.is_valid():
+                newgroup.save()
                                                 
                 return Response("Role Created Successfully",status=status.HTTP_201_CREATED)
             else:
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+                return Response(newgroup.errors,status=status.HTTP_400_BAD_REQUEST) 
         except Exception as e:
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
            
@@ -66,13 +66,13 @@ class GroupAddUpdateDelete(ModelViewSet):
             instance = self.get_object()       
             data = json.loads(request.body.decode('utf-8'))
 
-            serializer = self.serializer_class(instance=instance,data=data)
+            group = self.serializer_class(instance=instance,data=data)
             
-            if serializer.is_valid():
-                serializer.save()   
+            if group.is_valid():
+                group.save()   
                 return Response("Role Updated Successfully",status=status.HTTP_201_CREATED)
             else:
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+                return Response(group.errors,status=status.HTTP_400_BAD_REQUEST) 
         except Exception as e:
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
@@ -81,7 +81,7 @@ class GroupAddUpdateDelete(ModelViewSet):
         return Response("Role Deleted Successfully.", status=status.HTTP_200_OK)
 
 
-class UserAddUpdate(ModelViewSet):    
+class UserAddUpdateDelete(ModelViewSet):    
     
     serializer_class = UserSerializer
     
@@ -102,14 +102,14 @@ class UserAddUpdate(ModelViewSet):
         try:
             data = json.loads(request.body.decode('utf-8'))
             
-            serializer = self.serializer_class(data=data)
+            newuser = self.serializer_class(data=data)
             
-            if serializer.is_valid():
-                password = make_password(serializer.validated_data.get('password'))
-                serializer.save(password=password)                                     
-                return Response({'user_data': serializer.data, 'message': "User Created Successfully."},status=status.HTTP_201_CREATED)
+            if newuser.is_valid():
+                password = make_password(newuser.validated_data.get('password'))
+                newuser.save(password=password)                                     
+                return Response({'user_data': newuser.data, 'message': "User Created Successfully."},status=status.HTTP_201_CREATED)
             else:
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+                return Response(newuser.errors,status=status.HTTP_400_BAD_REQUEST) 
             
         except Exception as e:
             print(e)
@@ -122,24 +122,44 @@ class UserAddUpdate(ModelViewSet):
             
             data = json.loads(request.body.decode('utf-8'))
 
-            serializer = self.serializer_class(instance=instance,data=data,partial=True)
+            user = self.serializer_class(instance=instance,data=data,partial=True)
             
-            if serializer.is_valid():
-                if serializer.validated_data.get('password'):
-                    password = make_password(serializer.validated_data.get('password'))
-                    serializer.save(password=password)
+            if user.is_valid():
+                if user.validated_data.get('password'):
+                    password = make_password(user.validated_data.get('password'))
+                    user.save(password=password)
                 else:
-                    serializer.save()
+                    user.save()
                     
-                return Response({'user_data': serializer.data, 'message': "User updated Successfully."},status=status.HTTP_201_CREATED)
+                return Response({'user_data': user.data, 'message': "User updated Successfully."},status=status.HTTP_201_CREATED)
             else:
-                return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+                return Response(user.errors,status=status.HTTP_400_BAD_REQUEST) 
             
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+    def destroy(self,request,pk=None,*args,**kwargs):
+        
+        data = json.loads(request.body.decode('utf-8'))
+
+        if data["hard_delete"]:
+           super(UserAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
+           return Response("User Deleted Permanently.", status=status.HTTP_200_OK)  
+        else:
+           instance = self.get_object()
+           context = {'status': 0}
+           
+           user = self.serializer_class(instance=instance,data=context,partial=True)
             
+           if user.is_valid():
+              user.save()
+                    
+           return Response("User status changed Successfully.",status=status.HTTP_200_OK)
+            
+            
+            
+           
 class ReportingOfficers(ModelViewSet):
     serializer_class = ReportingOfficerSerializer
     

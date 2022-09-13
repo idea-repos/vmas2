@@ -1,11 +1,11 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
-from .views import LoginView, GroupAddUpdateDelete, UserAddUpdate, ReportingOfficers
+from .views import LoginView, GroupAddUpdateDelete, UserAddUpdateDelete, ReportingOfficers
  
 router = routers.SimpleRouter()
 router.register(r'roles', GroupAddUpdateDelete,basename="group")
-router.register(r'users', UserAddUpdate, basename="users")
+router.register(r'users', UserAddUpdateDelete, basename="users")
 router.register(r'reportofficer', ReportingOfficers, basename="reportsto")
 
 urlpatterns = [

@@ -89,7 +89,7 @@ class UserSerializer(serializers.ModelSerializer):
         
     class Meta:
         model = User
-        fields = ["id", "username", "password", "group", "last_login", "is_active", "reporting_officer", "user_role"]
+        fields = ["id", "username", "password", "group", "last_login", "is_active", "status", "reporting_officer", "user_role"]
    
      
 class ReportingOfficerSerializer(serializers.ModelSerializer):
