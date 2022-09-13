@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PageBar from '../components/common/PageBar';
-import { Button, Col, Container, Row } from 'react-bootstrap';
+import { Button, Card, Col, Container, Row } from 'react-bootstrap';
 import ShowEntries from '../components/common/ShowEntries';
 import SearchBox from '../components/common/SearchBox';
 import Pagination from '../components/common/Pagination';
@@ -8,17 +8,26 @@ import TargetTable, { target } from '../components/TargetTable';
 import { paginate } from '../utils/paginate';
 import _ from 'lodash';
 import { allTargets } from '../staticData';
+import CustomModal from '../components/common/CustomModal';
 
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 
 function TargetManagement() {
 
     const [targets, setTargets] = useState<target[]>([]);
+    const [targetId, setTargetId] = useState(0);
     const [pageSize, setPageSize] = useState<number>(5);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [sortColumn, setSortColumn] = useState<sortColumn>({path:'username', order:"asc"});
+    const [sortColumn, setSortColumn] = useState<sortColumn>({path:'name', order:"asc"});
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     
+    const handleDeleteModalOnClose = () => {
+        setTargetId(0)
+        setIsDeleteModalOpen(false)
+    };
+
     useEffect(() => {
         setTargets(allTargets)
     }, [])
@@ -34,6 +43,16 @@ function TargetManagement() {
 
     const handleSort = (sortColumn : sortColumn) => {
         setSortColumn(sortColumn)
+    }
+
+    const OpenModalForDelete = (id : number) => {
+        setTargetId(id);
+        setIsDeleteModalOpen(true);
+    }
+
+    const handleOnDelete = () => {
+        // integrate backend here
+        console.log(targetId)
     }
 
     const getPageData = () => {
@@ -74,6 +93,7 @@ function TargetManagement() {
                     targets = {page_targets}
                     onSort={handleSort}
                     sortColumn={sortColumn}
+                    OpenModalForDelete={OpenModalForDelete}
                 />
 
                 <Pagination 
@@ -83,6 +103,17 @@ function TargetManagement() {
                     currentPage={currentPage}
                 />
             </Container>
+
+            <CustomModal 
+                buttons={[<Button onClick={handleOnDelete} variant="danger">Delete</Button>]}
+                heading='Delete Role'
+                show={isDeleteModalOpen}
+                onHide={handleDeleteModalOnClose}
+                >
+                <Card body>
+                    Are your sure  you want to delete the target?
+                </Card>
+            </CustomModal>
         </React.Fragment>
     );
 }

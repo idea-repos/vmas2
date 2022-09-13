@@ -18,11 +18,11 @@ interface TargetTableProps {
     targets: target[];
     onSort : (sortColumn : sortColumn) => void;
     sortColumn : sortColumn;
-    OpenModalForDelete?: (id:number) => void;
+    OpenModalForDelete: (id:number) => void;
     OpenModalForView?: (id:number) => void;
 }
 
-function TargetTable({targets, sortColumn, onSort} : TargetTableProps) {
+function TargetTable({targets, sortColumn, onSort, OpenModalForDelete} : TargetTableProps) {
 
     const columns = [
         {
@@ -36,9 +36,9 @@ function TargetTable({targets, sortColumn, onSort} : TargetTableProps) {
         {
             label:'Action',
             key:'del-view-edit', 
-            content: () =>
+            content: (target: target) =>
                 <>
-                    <Button variant='danger' size='sm'>Delete</Button>{' '}
+                    <Button onClick={() => OpenModalForDelete(target.id)} variant='danger' size='sm'>Delete</Button>{' '}
                     <Button variant='secondary' size='sm'>View</Button>{' '}
                     <Button href='#edit' variant='primary' size='sm' >Edit</Button>
                 </>

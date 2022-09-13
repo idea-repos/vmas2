@@ -104,7 +104,6 @@ function RoleManagement () {
     }
 
     const openModalOnEdit = (role : role) => {
-        console.log(role)
         setRole(role.name);
         setRoleId(role.id);
         setUserReportTo(role.reports_to)
