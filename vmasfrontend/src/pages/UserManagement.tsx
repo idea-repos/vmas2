@@ -20,7 +20,10 @@ const GET_USERS_URL = 'api/users/'
 
 function UserManagement() {
     const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
+    const handleClose = () => {
+        setUserId(0);
+        setShow(false);
+    }
     const handleShow = () => setShow(true);
 
     const [users, setUsers] = useState<user[]>([]);
@@ -32,12 +35,13 @@ function UserManagement() {
     const [flashMessage, setFlashMessage] = useState('');
     
 
-    const handleDelete =  async (value:number) => {
+    const handleDelete =  async (hardDelete:boolean) => {
         const DELETE_USER_URL = `api/users/${userId}`
         try {
-            const {data} = await axios.delete(DELETE_USER_URL, { data: { hardDelete: value } })
+            const {data} = await axios.delete(DELETE_USER_URL, { data: { hard_delete: hardDelete } })
             setFlashMessage(data.message)
             setUsers(users.filter(user => user.id !== userId))
+            handleClose()
         } catch (e) {
             console.log('getting errror from backend')
         }
@@ -133,8 +137,8 @@ function UserManagement() {
             <CustomModal 
                     heading='Delete User'
                     buttons={[
-                                <Button onClick={() => handleDelete(0)} variant="warning">Soft Delete</Button>,
-                                <Button onClick={() => handleDelete(1)} variant="danger">Hard Delete</Button>]}
+                                <Button onClick={() => handleDelete(false)} variant="warning">Soft Delete</Button>,
+                                <Button onClick={() => handleDelete(true)} variant="danger">Hard Delete</Button>]}
                     show={show}
                     onHide={handleClose}
                     >
