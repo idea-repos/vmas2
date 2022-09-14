@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate
-from .models import User, Group, Permission
+from .models import Section, User, Group, Permission
 
 class GroupSerializer(serializers.ModelSerializer):
     
@@ -50,7 +50,7 @@ class LoginSerializer(serializers.Serializer):
         if username and password:        
                 user = authenticate(request=self.context.get('request'),
                                 username=username, password=password)
-                if not user or not user.is_active:
+                if not user or not user.is_active or not user.status:
                     # If we don't have a regular user, raise a ValidationError
                     msg = 'Access denied: wrong username or password.'
                     raise serializers.ValidationError(msg, code='authorization')
@@ -98,10 +98,16 @@ class ReportingOfficerSerializer(serializers.ModelSerializer):
         model = User     
         fields = ["id", "username"]
         
+class SectionSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Section
+        fields = "__all__"
+        
 class PermissionSerializer(serializers.ModelSerializer):
     
-    allowed = serializers.CharField()
+    allowed = serializers.CharField(read_only=True)
     
     class Meta:
         model = Permission
-        fields = ["id", "perms_title", "section", "allowed"]
+        fields = ["id", "perm_section", "perms_title", "section", "allowed"]

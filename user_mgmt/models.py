@@ -42,7 +42,7 @@ class MyUserManager(BaseUserManager):
         return u
 
 class Section(models.Model):
-    section_name = models.CharField(max_length=200,null=False,blank=False)
+    section_name = models.CharField(max_length=200,null=False,blank=False,unique=True)
     section_desc = models.CharField(max_length=300,null=True,blank=True)
     status =  models.BooleanField(default=True)
     
@@ -50,9 +50,9 @@ class Section(models.Model):
         db_table = 'Sections'
            
 class Permission(models.Model):
-    perm_section = models.CharField(max_length=150,null=False,blank=False)
+    perm_section = models.CharField(max_length=150,null=False,blank=False,unique=True)
     perms_title = models.CharField(max_length=300,null=False,blank=False)
-    section = models.ForeignKey(Section,on_delete=models.SET_NULL,null=True,blank=True,unique=False)
+    section = models.ForeignKey(Section,on_delete=models.CASCADE,null=True,blank=True,unique=False)
     status = models.BooleanField(default=True)
     
     class Meta:
