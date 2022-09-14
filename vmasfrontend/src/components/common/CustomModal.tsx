@@ -19,12 +19,12 @@ function CustomModal({children, heading, show, onHide, buttons, errMessage} : Cu
             </Modal.Header>
             <Modal.Body>{children}</Modal.Body>
             {errMessage && <Alert variant='success'>{errMessage}</Alert>}
-            <Modal.Footer>
-            <Button variant="secondary" onClick={onHide}>
-                Close
-            </Button>
-            {buttons?.length && buttons?.map((button, index) => <div key={index}>{button}</div>)}
-            </Modal.Footer>
+            {buttons?.length && 
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={onHide}>Close</Button>
+                    {buttons?.map((button, index) => <div key={index}>{button}</div>)}
+                </Modal.Footer>
+            }
         </Modal>
     );
 }

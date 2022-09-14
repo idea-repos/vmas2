@@ -2,11 +2,19 @@ import React from 'react';
 import { Button } from 'react-bootstrap';
 import Table from './common/Table';
 
+export interface targetDetail {
+    attribute : string,
+    condition: string,
+    value: string
+}
+
 export interface target {
     id : number;
     name : string;
     created_at : Date | number;
-    notes: string
+    notes: string;
+    description?: string;
+    details: targetDetail[]
 }
 
 export interface sortColumn {
@@ -19,10 +27,10 @@ interface TargetTableProps {
     onSort : (sortColumn : sortColumn) => void;
     sortColumn : sortColumn;
     OpenModalForDelete: (id:number) => void;
-    OpenModalForView?: (id:number) => void;
+    OpenModalForView: (target:target) => void;
 }
 
-function TargetTable({targets, sortColumn, onSort, OpenModalForDelete} : TargetTableProps) {
+function TargetTable({targets, sortColumn, onSort, OpenModalForDelete, OpenModalForView} : TargetTableProps) {
 
     const columns = [
         {
@@ -39,7 +47,7 @@ function TargetTable({targets, sortColumn, onSort, OpenModalForDelete} : TargetT
             content: (target: target) =>
                 <>
                     <Button onClick={() => OpenModalForDelete(target.id)} variant='danger' size='sm'>Delete</Button>{' '}
-                    <Button variant='secondary' size='sm'>View</Button>{' '}
+                    <Button onClick={() => OpenModalForView(target)} variant='secondary' size='sm'>View</Button>{' '}
                     <Button href='#edit' variant='primary' size='sm' >Edit</Button>
                 </>
        },
