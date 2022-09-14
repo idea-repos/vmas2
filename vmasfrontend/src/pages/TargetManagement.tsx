@@ -4,11 +4,13 @@ import { Button, Card, Col, Container, Row } from 'react-bootstrap';
 import ShowEntries from '../components/common/ShowEntries';
 import SearchBox from '../components/common/SearchBox';
 import Pagination from '../components/common/Pagination';
-import TargetTable, { target } from '../components/TargetTable';
+import TargetTable, { target, targetDetail } from '../components/TargetTable';
 import { paginate } from '../utils/paginate';
 import _ from 'lodash';
 import { allTargets } from '../staticData';
 import CustomModal from '../components/common/CustomModal';
+import TargetViewTable from '../components/TargetViewTable';
+
 
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 
@@ -20,12 +22,19 @@ function TargetManagement() {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [sortColumn, setSortColumn] = useState<sortColumn>({path:'name', order:"asc"});
+    const [singleTarget, setSingleTarget] = useState<target>({id:0, name:'', description:'', created_at:0, details:[], notes:''});
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     
     const handleDeleteModalOnClose = () => {
         setTargetId(0)
         setIsDeleteModalOpen(false)
+    };
+
+    const handleViewModalOnClose = () => {
+        setTargetId(0)
+        setIsViewModalOpen(false)
     };
 
     useEffect(() => {
@@ -48,6 +57,12 @@ function TargetManagement() {
     const OpenModalForDelete = (id : number) => {
         setTargetId(id);
         setIsDeleteModalOpen(true);
+    }
+
+    const OpenModalForView = (target: target) => {
+        setTargetId(target.id);
+        setSingleTarget(target)
+        setIsViewModalOpen(true);
     }
 
     const handleOnDelete = () => {
@@ -94,6 +109,7 @@ function TargetManagement() {
                     onSort={handleSort}
                     sortColumn={sortColumn}
                     OpenModalForDelete={OpenModalForDelete}
+                    OpenModalForView={OpenModalForView}
                 />
 
                 <Pagination 
@@ -113,6 +129,27 @@ function TargetManagement() {
                 <Card body>
                     Are your sure  you want to delete the target?
                 </Card>
+            </CustomModal>
+            
+            <CustomModal 
+                heading={`Target Detail (${singleTarget?.name})`}
+                show={isViewModalOpen}
+                onHide={handleViewModalOnClose}
+                >
+                <>
+                    <div className='my-2'>
+                        <div>
+                            <strong>Target Name: {singleTarget?.name}</strong>
+                            <span>{true}</span>
+                        </div>
+                        <div>
+                            <strong>Description: {singleTarget?.description}</strong>
+                            <span>{false}</span>
+                        </div>
+                    </div>
+                    
+                    <TargetViewTable targetDetails={singleTarget?.details}/>
+                </>
             </CustomModal>
         </React.Fragment>
     );
