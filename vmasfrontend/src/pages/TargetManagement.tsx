@@ -90,7 +90,7 @@ function TargetManagement() {
                 <PageBar 
                     title='TARGETS MANAGEMENT'
                     havingChildren={true}>
-                    <Button variant='primary' href='#'>Create Target</Button>
+                    <Button variant='primary' href='/target/add'>Create Target</Button>
                 </PageBar>
 
                 <Row>

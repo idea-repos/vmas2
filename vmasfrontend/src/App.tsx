@@ -7,6 +7,7 @@ import CreateUser from './components/CreateUser';
 import PasswordChange from './pages/PasswordChange';
 import RoleManagement from './pages/RoleManagement';
 import TargetManagement from './pages/TargetManagement';
+import TargetCreateEdit from './components/TargetCreateEdit';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
               <Route path='/login' element={<LoginForm />} />
               <Route path='/home' element={<Home />} />
               <Route path='/target' element={<TargetManagement />} />
+              <Route path='/target/add' element={<TargetCreateEdit />} />
               <Route path='/roles' element={<RoleManagement />} />
               <Route path='/users' element={<UserManagement />} />
               <Route path='/users/create' element={<CreateUser />} />
