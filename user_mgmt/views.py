@@ -17,7 +17,7 @@ class LoginView(APIView):
 
     def post(self, request, format=None):
         try:
-            data = json.loads(request.body.decode('utf8'))
+            data = json.loads(request.body.decode('utf-8'))
             serializer = LoginSerializer(data=data,
                 context={ 'request': self.request })
             serializer.is_valid(raise_exception=False)
@@ -83,7 +83,41 @@ class GroupAddUpdateDelete(ModelViewSet):
         super(GroupAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
         return Response("Role Deleted Successfully.", status=status.HTTP_200_OK)
 
+    
+    @action(methods=['get'], detail=True,  url_path="get-sections")
+    def get_section(self, request, *args, **kwargs):
+        
+        sections= Section.objects.values()
 
+        group = self.get_object()
+        group_sections = group.sections.values()
+        
+        for section in sections:
+            section["allowed"] = next((True for grp_section in group_sections  if section["id"] == grp_section["id"]), False)
+
+        serializer = SectionSerializer(sections, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @action(methods=['put'], detail=True,  url_path="update-sections")
+    def add_section(self, request, pk=None, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            data = json.loads(request.body.decode('utf-8'))
+                
+            section = self.serializer_class(instance=instance,data=data)
+        
+            if section.is_valid():
+                section.save()
+                                                
+                return Response("Sections updated for group successfully.",status=status.HTTP_201_CREATED)
+            else:
+                return Response(section.errors,status=status.HTTP_400_BAD_REQUEST) 
+        except Exception as e:
+            print(e)
+            return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    
+    
 class UserAddUpdateDelete(ModelViewSet):    
     
     serializer_class = UserSerializer
@@ -229,13 +263,13 @@ class SectionAddUpdateDelete(ModelViewSet):
         super(SectionAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
         return Response("Section Deleted Successfully.", status=status.HTTP_200_OK)
     
-    @action(methods=["get"], detail=True,  url_path="get-permissions")
+    @action(methods=['get'], detail=True,  url_path="get-permissions")
     def get_permission(self, request, *args, **kwargs):
         permissions= Permission.objects.filter(section_id=self.get_object())
         serializer = PermissionSerializer(permissions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    @action(methods=['post'], detail=True,  url_path="add-permission",)
+    @action(methods=['post'], detail=True,  url_path="add-permission")
     def add_permission(self,request,pk=None,*args,**kwargs):
         try:
             data = json.loads(request.body.decode('utf-8'))

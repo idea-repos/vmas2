@@ -3,9 +3,27 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate
 from .models import Section, User, Group, Permission
 
+class SectionSerializer(serializers.ModelSerializer):
+    allowed = serializers.BooleanField(required=False)
+    
+    class Meta:
+        model = Section
+        fields = ["id", "section_name", "section_desc", "allowed"]
+                
+class PermissionSerializer(serializers.ModelSerializer):
+    
+    allowed = serializers.BooleanField(required=False)
+    section_name = serializers.CharField(required=False)
+        
+    class Meta:
+        model = Permission
+        fields = ["id", "perm_section", "perms_title", "section_name", "section", "allowed"]
+      
 class GroupSerializer(serializers.ModelSerializer):
     
     users_count = serializers.SerializerMethodField('get_users_count')
+    sections_allowed = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all(), write_only=True, required=False, many=True)
+    sections_notallowed = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all(), write_only=True, required=False, many=True)
         
     def get_users_count(self, objGroup):
         global users_count
@@ -21,9 +39,25 @@ class GroupSerializer(serializers.ModelSerializer):
         
     class Meta:
         model = Group
-        fields = ["id", "name", "reports_to", "users_count"]
+        fields = ["id", "name", "reports_to", "users_count", "sections_allowed", "sections_notallowed"]
+        
+    def update(self, instance, validated_data):
+        if 'sections_allowed' in validated_data:
+            sections = validated_data.pop('sections_allowed')
+            for section in sections:
+                section = Section.objects.get(id=section.id)
+                instance.sections.add(section)
+               
+            if 'sections_notallowed' in validated_data:
+                sections = validated_data.pop('sections_notallowed')
+                for section in sections:
+                    section = Section.objects.get(id=section.id)
+                    instance.sections.remove(section)       
+        else:
+            return super(GroupSerializer, self).update(instance, validated_data)
+        
+        return instance
    
-
 class LoginSerializer(serializers.Serializer):
     """
     This serializer defines two fields for authentication:
@@ -98,16 +132,3 @@ class ReportingOfficerSerializer(serializers.ModelSerializer):
         model = User     
         fields = ["id", "username"]
         
-class SectionSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = Section
-        fields = "__all__"
-        
-class PermissionSerializer(serializers.ModelSerializer):
-    
-    allowed = serializers.CharField(read_only=True)
-    
-    class Meta:
-        model = Permission
-        fields = ["id", "perm_section", "perms_title", "section", "allowed"]
