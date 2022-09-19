@@ -1,28 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Col, Container, Form, InputGroup, Row, Button } from 'react-bootstrap';
 import PageBar from './common/PageBar';
+import { useLocation, useParams } from 'react-router-dom';
+import { getDataById } from '../staticData';
+import { targetDetail } from './TargetTable';
+
 
 function TargetCreateEdit() {
 
+    const params = useParams();
+    const target_edit_id = params?.id;
+
     const [validated, setValidated] = useState(false);
     const [targetName, setTargetName] = useState('');
-    const [targetDesc, setTargetDesc] = useState('');
-    const [targetSubDatas, setTargetSubDatas] = useState([{id:1, attibute:'CallNumber', operator:'Contains', value:''}]);
+    const [targetDesc, setTargetDesc] = useState<string | undefined>('');
+    const [targetSubDatas, setTargetSubDatas] = useState<targetDetail[]>([{id:1, attribute:'CallNumber', condition:'Contains', value:''}]);
     let [lastId, setLastId] = useState(targetSubDatas[0].id);
+
+    useEffect(() => {
+        if (target_edit_id) {
+            const targetDetailed = getDataById(parseInt(target_edit_id))
+            setTargetName(targetDetailed.name)
+            setTargetDesc(targetDetailed.description)
+            setTargetSubDatas(targetDetailed.details)
+            setLastId(targetDetailed.details[targetDetailed.details.length-1].id)
+        }
+    }, [])
 
     const handleSubmit = async (event : any) => {
         event.preventDefault();
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
             event.stopPropagation();
+        } else if (target_edit_id) {
+            console.log('edit')
         } else {
+            console.log('create')
         }
         setValidated(true);
     }
 
     const handleRemoveSubData = (id:number) => {
         if (targetSubDatas.length == 1) {
-            setTargetSubDatas([{id:1, attibute:'CallNumber', operator:'Contains', value:''}]);
+            setTargetSubDatas([{id:1, attribute:'CallNumber', condition:'Contains', value:''}]);
             setLastId(1);
         } else {
             setTargetSubDatas(targetSubDatas.filter((targetSubData) => targetSubData.id !== id))
@@ -32,16 +52,16 @@ function TargetCreateEdit() {
     const handleAddSubData = () => {
         setLastId(++lastId);
         setTargetSubDatas([...targetSubDatas, 
-            {id:lastId, attibute:'CallNumber', operator:'Contains', value:''}])
+            {id:lastId, attribute:'CallNumber', condition:'Contains', value:''}])
     }
 
     const hangleOnChange = (id:number, event : any) => {
         setTargetSubDatas(targetSubDatas.map((targetSubData, index) => {
             if (targetSubData.id === id) {
                 if (event.target.name === 'attribute-select')
-                    targetSubData.attibute = event.target.value;
-                if (event.target.name === 'operator-select')
-                    targetSubData.operator = event.target.value;
+                    targetSubData.attribute = event.target.value;
+                if (event.target.name === 'condition-select')
+                    targetSubData.condition = event.target.value;
                 if (event.target.name === 'input-value')
                     targetSubData.value = event.target.value;
             }
@@ -89,7 +109,7 @@ function TargetCreateEdit() {
                                                 <InputGroup>
                                                     <Form.Select 
                                                         name='attribute-select'
-                                                        value={targetSubData.attibute} 
+                                                        value={targetSubData.attribute} 
                                                         onChange={e => hangleOnChange(targetSubData.id, e)}>
                                                         <option value="CallNumber">CallNumber</option>
                                                         <option value="Mail">Mail</option>
@@ -107,8 +127,8 @@ function TargetCreateEdit() {
                                                 <Form.Label style={{'float':'left'}}>Attribute</Form.Label>
                                                 <InputGroup>
                                                     <Form.Select
-                                                        name='operator-select'
-                                                        value={targetSubData.operator} 
+                                                        name='condition-select'
+                                                        value={targetSubData.condition} 
                                                         onChange={e => hangleOnChange(targetSubData.id, e)}>
                                                             <option value="Contains">Contains</option>
                                                             <option value="Equal">Equal</option>

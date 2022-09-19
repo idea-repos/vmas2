@@ -1,8 +1,10 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import Table from './common/Table';
 
 export interface targetDetail {
+    id: number
     attribute : string,
     condition: string,
     value: string
@@ -32,6 +34,12 @@ interface TargetTableProps {
 
 function TargetTable({targets, sortColumn, onSort, OpenModalForDelete, OpenModalForView} : TargetTableProps) {
 
+    const navigate = useNavigate();
+
+    const navigateToEdit = (item:target) => {
+        navigate(`${item.id}/edit`, {state: {data:item}})
+    }
+
     const columns = [
         {
             path:'name', 
@@ -48,7 +56,7 @@ function TargetTable({targets, sortColumn, onSort, OpenModalForDelete, OpenModal
                 <>
                     <Button onClick={() => OpenModalForDelete(target.id)} variant='danger' size='sm'>Delete</Button>{' '}
                     <Button onClick={() => OpenModalForView(target)} variant='secondary' size='sm'>View</Button>{' '}
-                    <Button href='#edit' variant='primary' size='sm' >Edit</Button>
+                    <Button onClick={() => navigateToEdit(target)} variant='primary' size='sm' >Edit</Button>
                 </>
        },
        {   

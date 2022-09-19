@@ -18,6 +18,7 @@ function App() {
               <Route path='/home' element={<Home />} />
               <Route path='/target' element={<TargetManagement />} />
               <Route path='/target/add' element={<TargetCreateEdit />} />
+              <Route path='/target/:id/edit' element={<TargetCreateEdit />} />
               <Route path='/roles' element={<RoleManagement />} />
               <Route path='/users' element={<UserManagement />} />
               <Route path='/users/create' element={<CreateUser />} />
