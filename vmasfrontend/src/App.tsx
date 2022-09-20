@@ -8,6 +8,7 @@ import PasswordChange from './pages/PasswordChange';
 import RoleManagement from './pages/RoleManagement';
 import TargetManagement from './pages/TargetManagement';
 import TargetCreateEdit from './components/TargetCreateEdit';
+import SectionManagement from './pages/SectionManagement';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Routes>
               <Route path='/login' element={<LoginForm />} />
               <Route path='/home' element={<Home />} />
+              <Route path='/sections' element={<SectionManagement />} />
               <Route path='/target' element={<TargetManagement />} />
               <Route path='/target/add' element={<TargetCreateEdit />} />
               <Route path='/target/:id/edit' element={<TargetCreateEdit />} />

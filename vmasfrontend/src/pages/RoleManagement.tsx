@@ -1,5 +1,5 @@
 import axios from '../api/axios';
-import React, { useEffect, useState } from 'react';
+import React, { FormEvent, useEffect, useState } from 'react';
 import PageBar from '../components/common/PageBar';
 import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import CustomModal from '../components/common/CustomModal';
@@ -48,7 +48,7 @@ function RoleManagement () {
     const [searchQuery, setSearchQuery] = useState('');
     const [flashMessage, setFlashMessage] = useState("");
 
-    const handleSubmit = async (event : any) => {
+    const handleSubmit = async (event : FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const form = event.currentTarget;
         if (form.checkValidity() === false) {

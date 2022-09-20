@@ -16,29 +16,16 @@ const SideNavigation = ({isOpen, toggleSidebar} : SideNavigationProps) => {
                 <div className="card">
                     <div className="card-header" id="headingOne">
                         <h5 className="mb-0">
-                            <button className="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                Rule Management
-                            </button>
+                            <a href="/roles" className="btn btn-link collapsed">Role Management</a>
                         </h5>
-                    </div>
-                    <div id="collapseOne" className="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-                        <div className="card-body">
-                            <a href="/roles" className="btn btn-secondary">Role Management</a>
-                        </div>
                     </div>
                 </div>
                 <div className="card">
                     <div className="card-header" id="headingTwo">
                         <h5 className="mb-0">
-                            <button className="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                Target Management
-                            </button>
+                            <a className="btn btn-link collapsed" href="/target">Target Management
+                            </a>
                         </h5>
-                    </div>
-                    <div id="collapseTwo" className="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-                        <div className="card-body">
-                            Target Management
-                        </div>
                     </div>
                 </div>
                 <div className="card">
@@ -48,10 +35,13 @@ const SideNavigation = ({isOpen, toggleSidebar} : SideNavigationProps) => {
                             </a>
                         </h5>
                     </div>
-                    <div id="collapseThree" className="collapse" aria-labelledby="headingThree" data-parent="#accordion">
-                        <div className="card-body">
-                            User Management
-                        </div>
+                </div>
+                <div className="card">
+                    <div className="card-header" id="headingFour">
+                        <h5 className="mb-0">
+                            <a className="btn btn-link collapsed" href="/sections">Section Management
+                            </a>
+                        </h5>
                     </div>
                 </div>
             </div>
