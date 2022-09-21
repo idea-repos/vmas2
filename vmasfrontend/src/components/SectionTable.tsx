@@ -1,6 +1,7 @@
 import React from 'react';
-import { Tab } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import Table from './common/Table';
+
 
 export interface sortColumn {
     path: string,
@@ -38,9 +39,9 @@ function SectionTable({sections, onSort, sortColumn, onHandleEdit, onHandleDelet
             key:'edit', 
             content: (section:section) =>
             <>
-                <button className='btn btn-primary btn-sm'>Privilege</button>
-                <button onClick={() => onHandleEdit(section)} className='btn btn-secondary btn-sm mx-1'>Edit</button>
-                <button onClick={() => onHandleDelete(section.id)} className='btn btn-danger btn-sm '>Delete</button>
+                <Button href={`section/${section.id}/permissions`} variant='primary' size='sm'>Manage</Button>
+                <Button className='mx-1' onClick={() => onHandleEdit(section)} variant='secondary' size='sm'>Edit</Button>
+                <Button onClick={() => onHandleDelete(section.id)} variant='danger' size='sm'>Delete</Button>
             </>
        }
     ]

@@ -9,6 +9,7 @@ import RoleManagement from './pages/RoleManagement';
 import TargetManagement from './pages/TargetManagement';
 import TargetCreateEdit from './components/TargetCreateEdit';
 import SectionManagement from './pages/SectionManagement';
+// import SectionPermissionManagement from './pages/SectionPermissionManagement';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
               <Route path='/login' element={<LoginForm />} />
               <Route path='/home' element={<Home />} />
               <Route path='/sections' element={<SectionManagement />} />
+              {/* <Route path='/section/:id/permissions' element={<SectionPermissionManagement />} /> */}
               <Route path='/target' element={<TargetManagement />} />
               <Route path='/target/add' element={<TargetCreateEdit />} />
               <Route path='/target/:id/edit' element={<TargetCreateEdit />} />

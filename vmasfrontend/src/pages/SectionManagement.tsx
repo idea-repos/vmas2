@@ -1,16 +1,19 @@
 import { AxiosError } from 'axios';
+import _ from 'lodash';
 import React, { FormEvent, useEffect, useState } from 'react';
 import { Alert, Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import axios from '../api/axios';
 import CustomModal from '../components/common/CustomModal';
 import PageBar from '../components/common/PageBar';
+import Pagination from '../components/common/Pagination';
 import SearchBox from '../components/common/SearchBox';
 import ShowEntries from '../components/common/ShowEntries';
 import SectionTable, { section, sortColumn } from '../components/SectionTable';
+import { paginate } from '../utils/paginate';
 
 
 
-const SECTION_URL = '/api/sections'
+const SECTION_URL = '/api/sections/'
 
 function SectionManagement() {
     
@@ -22,6 +25,7 @@ function SectionManagement() {
     const [section_desc, setSectionDesc] = useState('');
     const [flashMessage, setFlashMessage] = useState("");
     const [validated, setValidated] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const [sortColumn, setSortColumn] = useState<sortColumn>({path:'section_name', order:'asc'})
     
@@ -45,13 +49,12 @@ function SectionManagement() {
         } else {
             try {
                 if (sectionID === 0) {
-                    const ADD_SECTION_URL = '/api/section'
-                    const {data} = await axios.post(ADD_SECTION_URL, JSON.stringify({section_name, section_desc}));
+                    const {data} = await axios.post(SECTION_URL, JSON.stringify({section_name, section_desc}));
                     setFlashMessage('Section Added successfully');
                     handleClose()
                 } else {
-                    const EDIT_SECTION_URL = `${SECTION_URL}/${sectionID}/`;
-                    const {data} = await axios.post(EDIT_SECTION_URL, JSON.stringify({section_name, section_desc}));
+                    const EDIT_SECTION_URL = `${SECTION_URL}${sectionID}/`;
+                    const {data} = await axios.put(EDIT_SECTION_URL, JSON.stringify({section_name, section_desc}));
                     setFlashMessage('Section Updated successfully');
                     handleClose()
                 }
@@ -88,7 +91,7 @@ function SectionManagement() {
     };
 
     const handleDelete = async () => {
-        const DELETE_SECTION_URL = `${SECTION_URL}/${sectionID}`
+        const DELETE_SECTION_URL = `${SECTION_URL}${sectionID}`
         try {
             const {data} = await axios.delete(DELETE_SECTION_URL);
             setFlashMessage('Section Deleted Successfully');
@@ -96,7 +99,10 @@ function SectionManagement() {
         } catch (e) {
             const error = e as AxiosError;
         }
-        
+    }
+
+    const handlePageChange = (page : number) => {
+        setCurrentPage(page);
     }
 
     useEffect(() => {
@@ -106,6 +112,20 @@ function SectionManagement() {
         }
         getSections();
     }, [])
+
+    const getPageData = () => {
+        let filtered = allSections;
+        
+        if (searchQuery) {
+            filtered = allSections.filter(section => section.section_name.toLowerCase().startsWith(searchQuery.toLowerCase()));
+        } 
+
+        const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
+        const pageSections = paginate(sorted, currentPage, pageSize);
+        return {totalCount : sorted.length, data : pageSections};
+    }
+
+    const {totalCount, data : pageSections} = getPageData()
 
     return (
         <React.Fragment>
@@ -129,11 +149,18 @@ function SectionManagement() {
             </Row>
 
             <SectionTable 
-                sections={allSections}
+                sections={pageSections}
                 sortColumn={sortColumn}
                 onSort={handleSort}
                 onHandleEdit={openModalOnEdit}
                 onHandleDelete={openModalOnDelete}/>
+
+            <Pagination 
+                itemCount={totalCount} 
+                pageSize={pageSize} 
+                onPageChange={handlePageChange}
+                currentPage={currentPage}
+                />
 
             <CustomModal 
                 heading='Add Section'
