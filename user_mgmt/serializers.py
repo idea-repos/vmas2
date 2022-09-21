@@ -12,19 +12,23 @@ class SectionSerializer(serializers.ModelSerializer):
                 
 class PermissionSerializer(serializers.ModelSerializer):
     
-    allowed = serializers.BooleanField(required=False)
+    section_allowed = serializers.BooleanField(required=False)
+    group_perm_allowed = serializers.BooleanField(required=False)
+    perm_allowed = serializers.BooleanField(required=False)
     section_name = serializers.CharField(required=False)
         
     class Meta:
         model = Permission
-        fields = ["id", "perm_section", "perms_title", "section_name", "section", "allowed"]
+        fields = ["id", "perm_section", "perms_title", "section_name", "section", "section_allowed", "group_perm_allowed","perm_allowed"]
       
 class GroupSerializer(serializers.ModelSerializer):
     
     users_count = serializers.SerializerMethodField('get_users_count')
     sections_allowed = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all(), write_only=True, required=False, many=True)
     sections_notallowed = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all(), write_only=True, required=False, many=True)
-        
+    permissions_allowed = serializers.PrimaryKeyRelatedField(queryset=Permission.objects.all(), write_only=True, required=False, many=True)
+    permissions_notallowed = serializers.PrimaryKeyRelatedField(queryset=Permission.objects.all(), write_only=True, required=False, many=True)
+ 
     def get_users_count(self, objGroup):
         global users_count
         
@@ -39,22 +43,43 @@ class GroupSerializer(serializers.ModelSerializer):
         
     class Meta:
         model = Group
-        fields = ["id", "name", "reports_to", "users_count", "sections_allowed", "sections_notallowed"]
+        fields = ["id", "name", "reports_to", "users_count", "sections_allowed", "sections_notallowed", "permissions_allowed", "permissions_notallowed"]
+        extra_kwargs = {
+            'name': {'required': False}
+        }
         
     def update(self, instance, validated_data):
+        
+        if 'name' in validated_data:
+            return super(GroupSerializer, self).update(instance, validated_data)
+        
         if 'sections_allowed' in validated_data:
             sections = validated_data.pop('sections_allowed')
             for section in sections:
                 section = Section.objects.get(id=section.id)
                 instance.sections.add(section)
-               
-            if 'sections_notallowed' in validated_data:
+                
+                perms = Permission.objects.filter(section=section.id)
+                for perm in perms:
+                    instance.permissions.remove(perm)
+                              
+        if 'sections_notallowed' in validated_data:
                 sections = validated_data.pop('sections_notallowed')
                 for section in sections:
                     section = Section.objects.get(id=section.id)
-                    instance.sections.remove(section)       
-        else:
-            return super(GroupSerializer, self).update(instance, validated_data)
+                    instance.sections.remove(section)  
+                       
+        if 'permissions_allowed' in validated_data:
+            permissions = validated_data.pop('permissions_allowed')
+            for permission in permissions:
+                permission = Permission.objects.get(id=permission.id)
+                instance.permissions.add(permission)
+               
+        if 'permissions_notallowed' in validated_data:
+                permissions = validated_data.pop('permissions_notallowed')
+                for permission in permissions:
+                    permission = Permission.objects.get(id=permission.id)
+                    instance.permissions.remove(permission)  
         
         return instance
    
@@ -99,6 +124,9 @@ class UserSerializer(serializers.ModelSerializer):
     
     user_role = serializers.SerializerMethodField('get_user_role')
     last_login = serializers.SerializerMethodField('get_last_login')
+    permissions_allowed = serializers.PrimaryKeyRelatedField(queryset=Permission.objects.all(), write_only=True, required=False, many=True)
+    permissions_notallowed = serializers.PrimaryKeyRelatedField(queryset=Permission.objects.all(), write_only=True, required=False, many=True)
+ 
         
     def get_user_role(self, objUser):
         global user_role
@@ -123,9 +151,31 @@ class UserSerializer(serializers.ModelSerializer):
         
     class Meta:
         model = User
-        fields = ["id", "username", "password", "group", "last_login", "is_active", "status", "reporting_officer", "user_role"]
+        fields = ["id", "username", "password", "group", "last_login", "is_active", 
+                "status", "reporting_officer", "user_role", "permissions_allowed", 
+                "permissions_notallowed"]
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': False}
+        }
    
      
+    def update(self, instance, validated_data):
+        if 'permissions_allowed' in validated_data:
+            permissions = validated_data.pop('permissions_allowed')
+            for permission in permissions:
+                permission = Permission.objects.get(id=permission.id)
+                instance.permissions.add(permission)
+               
+            if 'permissions_notallowed' in validated_data:
+                permissions = validated_data.pop('permissions_notallowed')
+                for permission in permissions:
+                    permission = Permission.objects.get(id=permission.id)
+                    instance.permissions.remove(permission)     
+        else:
+            return super(UserSerializer, self).update(instance, validated_data)
+        
+        return instance
+    
 class ReportingOfficerSerializer(serializers.ModelSerializer):
     
     class Meta:
