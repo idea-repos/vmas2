@@ -15,7 +15,7 @@ function TableBody({data, columns} : TableBodyProps) {
     }
 
     const createKey = (item : any, column: any) => {
-        return item._id + (column.path || column.key);
+        return item.id + (column.path || column.key);
     }
 
     return ( 

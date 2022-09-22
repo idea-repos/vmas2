@@ -6,12 +6,12 @@ interface PageBarProps {
     havingChildren? : boolean
 }
 
-function PageBar({title, children, havingChildren} : PageBarProps) {
+function PageBar({title, children} : PageBarProps) {
     return (
         <nav className="navbar navbar-expand-lg bg-light">
             <div className="container-fluid">
                 <p className="navbar-brand">{title}</p>
-                {havingChildren &&  <div className="d-flex">{children}</div>}
+                {children &&  <div className="d-flex">{children}</div>}
             </div>
         </nav>
     );
