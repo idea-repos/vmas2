@@ -1,15 +1,14 @@
 import json
-from django.http import HttpResponse
 from rest_framework.response import Response
 from .serializers import LoginSerializer, GroupSerializer, PermissionSerializer, UserSerializer, \
                          SectionSerializer, ReportingOfficerSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from .models import Group, Section, User, Permission
-from .utils import getuserperms
-from rest_framework import status
+from .utils import create_object, getuserperms, update_object
 from django.contrib.auth.hashers import make_password
 from rest_framework.decorators import action
+from rest_framework import status
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login,logout
 
@@ -29,7 +28,9 @@ class LoginView(APIView):
                 user = serializer.validated_data['user']
                 login(request, user)
                 permissions = getuserperms(user)
-                data = {"user": UserSerializer(user).data, "perms": PermissionSerializer(permissions, many=True).data, "message": "User Authenticated."}
+                data = {"user": UserSerializer(user).data,
+                        "perms": PermissionSerializer(permissions, many=True).data, 
+                        "message": "User Authenticated."}
                 return Response(data,status=status.HTTP_202_ACCEPTED)
         except Exception as e:
             print(e)
@@ -53,32 +54,25 @@ class GroupAddUpdateDelete(ModelViewSet):
     
     def create(self,request,*args,**kwargs):
         try:
-            data = json.loads(request.body.decode('utf-8'))
-            
-            newgroup = self.serializer_class(data=data)
-            if newgroup.is_valid():
-                newgroup.save()
-                                                
-                return Response("Role Created Successfully",status=status.HTTP_201_CREATED)
-            else:
-                return Response(newgroup.errors,status=status.HTTP_400_BAD_REQUEST) 
+           newgroup =  create_object(self.serializer_class,request)
+           
+           if newgroup.errors:
+              return Response(newgroup.errors,status=status.HTTP_400_BAD_REQUEST) 
+           else:
+              print("errors:" ,newgroup.errors)
+              return Response("Role Created Successfully",status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-           
-        
+                
     def update(self,request,pk=None,*args,**kwargs):
         try:
-            instance = self.get_object()       
-            data = json.loads(request.body.decode('utf-8'))
-
-            group = self.serializer_class(instance=instance,data=data)
+            group = update_object(self,request)
             
-            if group.is_valid():
-                group.save()   
-                return Response("Role Updated Successfully",status=status.HTTP_201_CREATED)
+            if group.errors:
+               return Response(group.errors,status=status.HTTP_400_BAD_REQUEST) 
             else:
-                return Response(group.errors,status=status.HTTP_400_BAD_REQUEST) 
+               return Response("Role Updated Successfully",status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -301,37 +295,28 @@ class SectionAddUpdateDelete(ModelViewSet):
     
     def create(self,request,*args,**kwargs):
         try:
-            data = json.loads(request.body.decode('utf-8'))
-            
-            newsection = self.serializer_class(data=data)
-            if newsection.is_valid():
-                newsection.save()
-                                                
-                return Response("Section Created Successfully",status=status.HTTP_201_CREATED)
-            else:
-                return Response(newsection.errors,status=status.HTTP_400_BAD_REQUEST) 
+           newsection =  create_object(self.serializer_class,request)
+           
+           if newsection.errors:
+              return Response(newsection.errors,status=status.HTTP_400_BAD_REQUEST) 
+           else:
+              return Response("Section Created Successfully",status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-           
         
     def update(self,request,pk=None,*args,**kwargs):
         try:
-            instance = self.get_object()       
-            data = json.loads(request.body.decode('utf-8'))
-
-            section = self.serializer_class(instance=instance,data=data)
+            section = update_object(self,request)
             
-            if section.is_valid():
-                section.save()   
-                return Response("Section Updated Successfully",status=status.HTTP_201_CREATED)
+            if section.errors:
+               return Response(section.errors,status=status.HTTP_400_BAD_REQUEST) 
             else:
-                return Response(section.errors,status=status.HTTP_400_BAD_REQUEST) 
+               return Response("Section Updated Successfully",status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-
     def destroy(self,request,pk=None,*args,**kwargs):
         super(SectionAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
         return Response("Section Deleted Successfully.", status=status.HTTP_200_OK)
@@ -341,27 +326,9 @@ class SectionAddUpdateDelete(ModelViewSet):
         permissions= Permission.objects.filter(section_id=self.get_object())
         serializer = PermissionSerializer(permissions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    @action(methods=['post'], detail=True,  url_path="add-permission")
-    def add_permission(self,request,pk=None,*args,**kwargs):
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-            data["section"] = pk
-                
-            newperm = PermissionSerializer(data=data)
-        
-            if newperm.is_valid():
-                newperm.save()
-                                                
-                return Response("Permission Created Successfully",status=status.HTTP_201_CREATED)
-            else:
-                return Response(newperm.errors,status=status.HTTP_400_BAD_REQUEST) 
-        except Exception as e:
-            print(e)
-            return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
            
         
-class PermissionUpdateDelete(ModelViewSet):
+class PermissionAddUpdateDelete(ModelViewSet):
     serializer_class = PermissionSerializer
     
     def get_queryset(self):
@@ -377,26 +344,32 @@ class PermissionUpdateDelete(ModelViewSet):
         permission = self.get_object()
         return Response(self.serializer_class(permission).data, status=status.HTTP_200_OK)
            
-        
-    def update(self,request,pk=None,*args,**kwargs):
+    def create(self,request,pk=None,*args,**kwargs):
         try:
-            instance = self.get_object()       
-            data = json.loads(request.body.decode('utf-8'))
-
-            permission = self.serializer_class(instance=instance,data=data)
-            
-            if permission.is_valid():
-                permission.save()   
-                return Response("Permission Updated Successfully",status=status.HTTP_201_CREATED)
+            newperm =  create_object(self.serializer_class,request)
+        
+            if newperm.errors:
+                return Response(newperm.errors,status=status.HTTP_400_BAD_REQUEST) 
             else:
-                return Response(permission.errors,status=status.HTTP_400_BAD_REQUEST) 
+                return Response("Permission Created Successfully",status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-
+    def update(self,request,pk=None,*args,**kwargs):
+        try:
+            perm = update_object(self,request)
+            
+            if perm.errors:
+               return Response(perm.errors,status=status.HTTP_400_BAD_REQUEST) 
+            else:
+               return Response("Permission Updated Successfully",status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(e)
+            return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
     def destroy(self,request,pk=None,*args,**kwargs):
-        super(PermissionUpdateDelete, self).destroy(request,pk,*args,**kwargs)
+        super(PermissionAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
         return Response("Permission Deleted Successfully.", status=status.HTTP_200_OK)
     
     

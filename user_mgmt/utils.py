@@ -1,6 +1,24 @@
-from .models import Group, Section, User, Permission
+import json
+from .models import Section, Permission
 
+def create_object(serializer_class,request):
+    data = json.loads(request.body.decode('utf-8'))
+    
+    newobj = serializer_class(data=data)
+    if newobj.is_valid():
+        newobj.save()  
+    return newobj
+             
+def update_object(self,request):
+    instance = self.get_object()       
+    data = json.loads(request.body.decode('utf-8'))
 
+    upd_obj = self.serializer_class(instance=instance,data=data)
+    
+    if upd_obj.is_valid():
+        upd_obj.save()   
+    return upd_obj     
+        
 def getuserperms(user):
     user_perms = user.permissions.values()
     user_sections = user.group.sections.values()
