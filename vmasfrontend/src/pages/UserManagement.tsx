@@ -10,7 +10,7 @@ import SearchBox from '../components/common/SearchBox';
 import ShowEntries from '../components/common/ShowEntries';
 import { Alert, Button, Card, Row } from 'react-bootstrap';
 import Col from 'react-bootstrap/Col';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import CustomModal from '../components/common/CustomModal';
 
 
