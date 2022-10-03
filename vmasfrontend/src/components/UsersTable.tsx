@@ -49,8 +49,8 @@ function UsersTable({users, sortColumn, onSort, openModalForDelete} : UserTableP
             key:'edit', 
             content: (user : user) =>
                 <>
-                <Button variant='danger' onClick={() => openModalForDelete(user.id)} size='sm'>Delete</Button>
-                <Link className='btn btn-primary btn-sm mx-1' to={`/users/${user.id}/edit`}>Edit</Link>
+                <Button variant='danger' onClick={() => openModalForDelete(user.id)} size='sm'><i className="fa fa-trash" aria-hidden="true"></i></Button>
+                <Link className='btn btn-primary btn-sm mx-1' to={`/users/${user.id}/edit`}><i className="fa fa-pencil-square-o" aria-hidden="true"></i></Link>
                 </>
        }
    ]

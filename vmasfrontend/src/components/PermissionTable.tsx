@@ -37,8 +37,8 @@ function RoleTable({permissions, sortColumn, onSort, openModalOnEdit, openModalO
             key:'edit', 
             content: (permission : permission) =>
             <>
-                <Button onClick={() => openModalOnEdit(permission)} size='sm' variant='secondary' className='mx-1'>Edit</Button>
-                <Button onClick={() => openModalOnDelete(permission.id)} size='sm' variant='danger'>Delete</Button>
+                <Button onClick={() => openModalOnEdit(permission)} size='sm' variant='secondary' className='mx-1'><i className="fa fa-pencil-square-o" aria-hidden="true"></i></Button>
+                <Button onClick={() => openModalOnDelete(permission.id)} size='sm' variant='danger'><i className="fa fa-trash" aria-hidden="true"></i></Button>
             </>
        }
     ]

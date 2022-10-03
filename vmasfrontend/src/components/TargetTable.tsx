@@ -54,9 +54,9 @@ function TargetTable({targets, sortColumn, onSort, OpenModalForDelete, OpenModal
             key:'del-view-edit', 
             content: (target: target) =>
                 <>
-                    <Button onClick={() => OpenModalForDelete(target.id)} variant='danger' size='sm'>Delete</Button>{' '}
-                    <Button onClick={() => OpenModalForView(target)} variant='secondary' size='sm'>View</Button>{' '}
-                    <Button onClick={() => navigateToEdit(target)} variant='primary' size='sm' >Edit</Button>
+                    <Button onClick={() => OpenModalForDelete(target.id)} variant='danger' size='sm'><i className="fa fa-trash" aria-hidden="true"></i></Button>{' '}
+                    <Button onClick={() => OpenModalForView(target)} variant='secondary' size='sm'><i className="fa fa-eye" aria-hidden="true"></i></Button>{' '}
+                    <Button onClick={() => navigateToEdit(target)} variant='primary' size='sm' ><i className="fa fa-pencil-square-o" aria-hidden="true"></i></Button>
                 </>
        },
        {   

@@ -39,9 +39,9 @@ function SectionTable({sections, onSort, sortColumn, onHandleEdit, onHandleDelet
             key:'edit', 
             content: (section:section) =>
             <>
-                <Button href={`section/${section.id}/permissions`} variant='primary' size='sm'>Manage</Button>
-                <Button className='mx-1' onClick={() => onHandleEdit(section)} variant='secondary' size='sm'>Edit</Button>
-                <Button onClick={() => onHandleDelete(section.id)} variant='danger' size='sm'>Delete</Button>
+                <Button href={`section/${section.id}/permissions`} variant='primary' size='sm'><i className="fa fa-lock" aria-hidden="true"></i></Button>
+                <Button className='mx-1' onClick={() => onHandleEdit(section)} variant='secondary' size='sm'><i className="fa fa-pencil-square-o" aria-hidden="true"></i></Button>
+                <Button onClick={() => onHandleDelete(section.id)} variant='danger' size='sm'><i className="fa fa-trash" aria-hidden="true"></i></Button>
             </>
        }
     ]
