@@ -1,6 +1,6 @@
 import React from 'react';
-import { Container, Button } from 'react-bootstrap';
 import Table from './common/Table';
+import { Button } from 'react-bootstrap';
 
 
 export interface role {
@@ -40,9 +40,10 @@ function RoleTable({roles, sortColumn, onSort, openModalOnEdit, openModalOnDelet
             key:'edit', 
             content: (role : role) =>
             <>
-                <button className='btn btn-primary btn-sm'>Privilege</button>
-                <button onClick={() => openModalOnEdit(role)} className='btn btn-secondary btn-sm mx-1'>Edit</button>
-                <button onClick={() => openModalOnDelete(role)} className='btn btn-danger btn-sm '>Delete</button>
+                <Button variant='primary' size='sm' title='Manage Section' href={`role/${role.id}/sections`}><i className="fa fa-lock" aria-hidden="true"></i></Button>
+                <Button variant='primary' size='sm' title='Manage Permission' className='mx-1'><i className="fa fa-user-secret" aria-hidden="true"></i></Button>
+                <Button variant='secondary' size='sm' title='Edit' onClick={() => openModalOnEdit(role)} className='mx-1'><i className="fa fa-pencil-square-o" aria-hidden="true"></i></Button>
+                <Button variant='danger' size='sm' title='Delete' onClick={() => openModalOnDelete(role)}><i className="fa fa-trash" aria-hidden="true"></i></Button>
             </>
        }
     ]
