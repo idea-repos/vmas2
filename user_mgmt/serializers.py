@@ -1,8 +1,28 @@
-from rest_framework import serializers
+from rest_framework import exceptions, serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import authenticate
 from .models import Section, User, Group, Permission
+from .utils import getuserperms 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    
+    def validate(self, attrs):
+        data = super(CustomTokenObtainPairSerializer, self).validate(attrs)
+        
+        if not self.user.status:
+            raise exceptions.AuthenticationFailed(
+                self.error_messages["no_active_account"],
+                "no_active_account",
+            )
+            
+        data.update({'user': UserSerializer(self.user).data})
+        
+        permissions = getuserperms(self.user)
+        data.update({'perms': PermissionSerializer(permissions, many=True).data})
+        data.update({'message': "User Authenticated."})
+        return data
+    
 class SectionSerializer(serializers.ModelSerializer):
     allowed = serializers.BooleanField(required=False)
     
@@ -81,44 +101,7 @@ class GroupSerializer(serializers.ModelSerializer):
                     permission = Permission.objects.get(id=permission.id)
                     instance.permissions.remove(permission)  
         
-        return instance
-   
-class LoginSerializer(serializers.Serializer):
-    """
-    This serializer defines two fields for authentication:
-      * username
-      * password.
-    It will try to authenticate the user with when validated.
-    """
-    username = serializers.CharField(
-        label="Username",
-        write_only=True
-    )
-    password = serializers.CharField(
-        label="Password",
-        style={'input_type': 'password'},
-        trim_whitespace=False,
-        write_only=True
-    )
-
-    def validate(self, attrs):
-        # Take username and password from request
-        username = attrs.get('username')
-        password = attrs.get('password')
-
-        if username and password:        
-                user = authenticate(request=self.context.get('request'),
-                                username=username, password=password)
-                if not user or not user.is_active or not user.status:
-                    # If we don't have a regular user, raise a ValidationError
-                    msg = 'Access denied: wrong username or password.'
-                    raise serializers.ValidationError(msg, code='authorization')
-        else:
-            msg = 'Both "username" and "password" are required.'
-            raise serializers.ValidationError(msg, code='Invalid input')
-        attrs['user'] = user
-        return attrs
-    
+        return instance  
 
 class UserSerializer(serializers.ModelSerializer):
     
