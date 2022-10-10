@@ -6,6 +6,7 @@ from .views import GroupAddUpdateDelete, SectionAddUpdateDelete, \
                    
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
+     TokenBlacklistView,
 )
  
 router = routers.SimpleRouter()
@@ -16,8 +17,9 @@ router.register(r'sections',SectionAddUpdateDelete, basename="sections")
 router.register(r'permissions',PermissionAddUpdateDelete, basename="permissions")
 
 urlpatterns = [
-    path('api/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('logout/', TokenBlacklistView.as_view(), name='token_blacklist'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/', include(router.urls)),
 ]
 
