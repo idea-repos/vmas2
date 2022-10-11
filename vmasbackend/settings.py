@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-import config
+from . import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -81,22 +81,7 @@ AUTH_USER_MODEL  = 'user_mgmt.User'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {
-     'default': {
-        'ENGINE': config.ENGINE,
-        'NAME': config.DB_NAME,
-        'USER': config.MYSQL_USER,
-        'PASSWORD': config.MYSQL_PASS,
-        'HOST': config.HOST_AT,  
-        'PORT': config.PORT,
-    },
-     'mongodb': {
-        'ENGINE': config.MONGO_ENGINE,
-        'NAME': config.MONGO_DB,
-        'USER' : config.MONGO_USER,
-        'PASSWORD' : config.MONGO_PASS,
-    }
-}
+DATABASES = config.DATABASE_CONFIGURATION
 
 
 # Password validation
