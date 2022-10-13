@@ -59,7 +59,7 @@ function SectionPermissionManagement() {
         } else {
             try {
                 if (permID === 0) {
-                    const {data} = await axios.post(`/api/sections/${section_id}/add-permission/`, JSON.stringify({perm_section, perms_title}));
+                    const {data} = await axios.post(`/api/permissions/`, JSON.stringify({perm_section, perms_title, section:section_id}));
                     setFlashMessage('Permission successfully added');
                 } else {
                     // edit existing permission of a section

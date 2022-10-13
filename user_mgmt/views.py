@@ -1,7 +1,7 @@
 import json
 from rest_framework.response import Response
-from .serializers import LoginSerializer, GroupSerializer, PermissionSerializer, UserSerializer, \
-                         SectionSerializer, ReportingOfficerSerializer
+from .serializers import GroupSerializer, PermissionSerializer, UserSerializer, \
+                         SectionSerializer, ReportingOfficerSerializer, CustomTokenObtainPairSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from .models import Group, Section, User, Permission
@@ -9,35 +9,17 @@ from .utils import create_object, getuserperms, update_object
 from django.contrib.auth.hashers import make_password
 from rest_framework.decorators import action
 from rest_framework import status
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login,logout
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import IsAuthenticated
 
 
 # Create your views here.
-class LoginView(APIView):
-
-    def post(self, request, format=None):
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-            serializer = LoginSerializer(data=data,
-                context={ 'request': self.request })
-            serializer.is_valid(raise_exception=False)
-            if serializer.errors:
-                return Response("Access denied: wrong username or password",status=status.HTTP_401_UNAUTHORIZED)
-            else:
-                user = serializer.validated_data['user']
-                login(request, user)
-                permissions = getuserperms(user)
-                data = {"user": UserSerializer(user).data,
-                        "perms": PermissionSerializer(permissions, many=True).data, 
-                        "message": "User Authenticated."}
-                return Response(data,status=status.HTTP_202_ACCEPTED)
-        except Exception as e:
-            print(e)
-            return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)              
-                        
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+                            
 class GroupAddUpdateDelete(ModelViewSet):    
     serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         groups = Group.objects.all()
@@ -158,6 +140,7 @@ class GroupAddUpdateDelete(ModelViewSet):
 class UserAddUpdateDelete(ModelViewSet):    
     
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         users = User.objects.all()
@@ -279,6 +262,7 @@ class ReportingOfficers(ModelViewSet):
        
 class SectionAddUpdateDelete(ModelViewSet):
     serializer_class = SectionSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         sections = Section.objects.all()
@@ -330,6 +314,7 @@ class SectionAddUpdateDelete(ModelViewSet):
         
 class PermissionAddUpdateDelete(ModelViewSet):
     serializer_class = PermissionSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         permissions = Permission.objects.all()

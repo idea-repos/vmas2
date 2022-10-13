@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
-from . import config
+from datetime import timedelta
+import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,8 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'user_mgmt',
+    'dir_mgmt',
 ]
 
 MIDDLEWARE = [
@@ -79,16 +82,7 @@ AUTH_USER_MODEL  = 'user_mgmt.User'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {
-     'default': {
-        'ENGINE': config.ENGINE,
-        'NAME': config.DB_NAME,
-        'USER': config.MYSQL_USER,
-        'PASSWORD': config.MYSQL_PASS,
-        'HOST': config.HOST_AT,  
-        'PORT': config.PORT,
-    }
-}
+DATABASES = config.DATABASE_CONFIGURATION
 
 
 # Password validation
@@ -133,3 +127,21 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_WHITELIST = 'http://localhost:3000',
+
+DATABASE_ROUTERS = ['dir_mgmt.routers.DatabaseRouter']
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=59),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+}
+
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}

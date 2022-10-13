@@ -21,8 +21,13 @@ def update_object(self,request):
         
 def getuserperms(user):
     user_perms = user.permissions.values()
-    user_sections = user.group.sections.values()
-    group_perms = user.group.permissions.values()
+    
+    if user.group is not None:
+        user_sections = user.group.sections.values()
+        group_perms = user.group.permissions.values()
+    else:
+        user_sections = []
+        group_perms = []
                 
     permissions = Permission.objects.all()
     

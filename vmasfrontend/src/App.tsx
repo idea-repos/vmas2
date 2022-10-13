@@ -11,6 +11,7 @@ import TargetCreateEdit from './components/TargetCreateEdit';
 import SectionManagement from './pages/SectionManagement';
 import SectionPermissionManagement from './pages/SectionPermissionManagement';
 import RoleSection from './pages/RoleSection';
+import RolePermission from './pages/RolePermission';
 import SpeakerManagement from './pages/dictionaryManagement/SpeakerManagement';
 import PrecedenceManagement from './pages/dictionaryManagement/PrecedenceManagement';
 import ReceiverManagement from './pages/dictionaryManagement/ReceiverManagement';
@@ -34,6 +35,7 @@ function App() {
               <Route path='/target/:id/edit' element={<TargetCreateEdit />} />
               <Route path='/roles' element={<RoleManagement />} />
               <Route path='/role/:id/sections' element={<RoleSection />} />
+              <Route path='/role/:id/permissions' element={<RolePermission />} />
               <Route path='/users' element={<UserManagement />} />
               <Route path='/users/create' element={<CreateUser />} />
               <Route path='/users/:id/edit' element={<CreateUser />} />
