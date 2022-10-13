@@ -3,7 +3,7 @@ import { Alert, Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap
 import CustomModal from '../../components/common/CustomModal';
 import PageBar from '../../components/common/PageBar';
 import { AxiosError } from 'axios';
-import { precedence, allPrecedence } from '../../staticData';
+import { receiver, receivers } from '../../staticData';
 import SearchBox from '../../components/common/SearchBox';
 import ShowEntries from '../../components/common/ShowEntries';
 import _ from 'lodash';
@@ -11,12 +11,12 @@ import { paginate } from '../../utils/paginate';
 import Pagination from '../../components/common/Pagination';
 import PrecedenceTable, {sortColumn} from '../../components/dictionary/PrecedenceTable';
 
-function PrecedenceManagement() {
+function ReceiverManagement() {
     const [show, setShow] = useState(false);
     const [validated, setValidated] = useState(false)
-    const [precedenceID, setPrecedenceID] = useState(0);
-    const [precedenceName, setPrecedenceName] = useState('');
-    const [allPrecedences, setAllPrecedence] = useState<precedence[]>([]);
+    const [receiverID, setReceiverID] = useState(0);
+    const [receiverName, setReceiverName] = useState('');
+    const [allReceivers, setAllReceivers] = useState<receiver[]>([]);
     const [flashMessage, setFlashMessage] = useState('');
     const [pageSize, setPageSize] = useState(5);
     const [searchQuery, setSearchQuery] = useState('');
@@ -28,7 +28,7 @@ function PrecedenceManagement() {
     const handleShowDelete = () => setShowDelete(true);
 
     useEffect(() => {
-        setAllPrecedence(allPrecedence);
+        setAllReceivers(receivers);
     }, [])
 
     const handleSearch = (query : string) => {
@@ -38,20 +38,20 @@ function PrecedenceManagement() {
 
     const handleShow = () => setShow(true);
     const handleClose = () => {
-        setPrecedenceName('');
-        setPrecedenceID(0)
+        setReceiverName('');
+        setReceiverID(0)
         setValidated(false)
         setShow(false)
     }
 
-    const openModalOnDelete = (precedence: precedence) => {
-        setPrecedenceID(precedence.id);
+    const openModalOnDelete = (receiver: receiver) => {
+        setReceiverID(receiver.id);
         handleShowDelete();
     }
 
-    const openModalOnEdit = (precedence : precedence) => {
-        setPrecedenceName(precedence.name);
-        setPrecedenceID(precedence.id);
+    const openModalOnEdit = (receiver : receiver) => {
+        setReceiverName(receiver.name);
+        setReceiverID(receiver.id);
         handleShow()
     }
     
@@ -62,12 +62,12 @@ function PrecedenceManagement() {
             event.stopPropagation();
         } else {
             try {
-                if (precedenceID == 0) {
+                if (receiverID == 0) {
                     // add
-                    setFlashMessage('Precedence Created Successfully')
+                    setFlashMessage('Receiver Created Successfully')
                 } else {
                     // edit it 
-                    setFlashMessage('Precedence Updated Successfully')
+                    setFlashMessage('Receiver Updated Successfully')
                 }
                 handleClose();
             } catch (err) {
@@ -82,9 +82,9 @@ function PrecedenceManagement() {
     }
 
     const handleOnDelete = async () => {
-        setAllPrecedence(allPrecedences.filter(precedence => precedence.id !== precedenceID))
+        setAllReceivers(allReceivers.filter(receiver => receiver.id !== receiverID))
         handleCloseDelete()
-        setFlashMessage('Precendence Deleted');
+        setFlashMessage('Receiver Deleted Successfully');
     }
 
     const handleSort = (sortColumn : sortColumn) => {
@@ -92,10 +92,10 @@ function PrecedenceManagement() {
     }
 
     const getPageData = () => {
-        let filtered = allPrecedences;
+        let filtered = allReceivers;
         
         if (searchQuery) {
-            filtered = allPrecedences.filter(precedence => precedence.name.toLowerCase().startsWith(searchQuery.toLowerCase()));
+            filtered = allReceivers.filter(receiver => receiver.name.toLowerCase().startsWith(searchQuery.toLowerCase()));
         } 
 
         const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
@@ -107,7 +107,7 @@ function PrecedenceManagement() {
 
     return (
         <>
-            <PageBar title='Dictionary Management ( Precedence )'>
+            <PageBar title='Dictionary Management ( Receiver )'>
                 <Button variant='primary' onClick={handleShow}>Add Speaker</Button>
             </PageBar>
 
@@ -141,23 +141,23 @@ function PrecedenceManagement() {
 
             <CustomModal
                 heading='Add Role'
-                buttons={[<Button form='form-speaker' variant="primary" type='submit'>Save</Button>]}
+                buttons={[<Button form='form-receiver' variant="primary" type='submit'>Save</Button>]}
                 show={show}
                 onHide={handleClose}>
-                    <Form noValidate id='form-speaker' validated={validated} onSubmit={handleSubmit}>
+                    <Form noValidate id='form-receiver' validated={validated} onSubmit={handleSubmit}>
                         <Form.Control
-                            defaultValue={precedenceID}
+                            defaultValue={receiverID}
                             type="hidden"
                             aria-describedby="inputGroupPrepend"
                             />
-                        <Form.Group className="mb-3" controlId="precedenceName">
+                        <Form.Group className="mb-3" controlId="receiverName">
                             <InputGroup hasValidation>
                                 <InputGroup.Text id="inputGroupPrepend">Name</InputGroup.Text>
                                 <Form.Control
-                                    defaultValue={precedenceName}
+                                    defaultValue={receiverName}
                                     type="text"
                                     aria-describedby="inputGroupPrepend"
-                                    onChange={ e => {setPrecedenceName(e.target.value)}}
+                                    onChange={ e => {setReceiverName(e.target.value)}}
                                     required
                                     />
                                 <Form.Control.Feedback type="invalid">This field is required</Form.Control.Feedback>
@@ -178,5 +178,4 @@ function PrecedenceManagement() {
     );
 }
 
-
-export default PrecedenceManagement;
+export default ReceiverManagement;

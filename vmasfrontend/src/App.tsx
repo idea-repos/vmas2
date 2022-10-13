@@ -13,6 +13,7 @@ import SectionPermissionManagement from './pages/SectionPermissionManagement';
 import RoleSection from './pages/RoleSection';
 import SpeakerManagement from './pages/dictionaryManagement/SpeakerManagement';
 import PrecedenceManagement from './pages/dictionaryManagement/PrecedenceManagement';
+import ReceiverManagement from './pages/dictionaryManagement/ReceiverManagement';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
               <Route path='/users/:id/password/change' element={<PasswordChange />} />
               <Route path='/dir_mgmt/dict/listing/speaker' element={<SpeakerManagement />} />
               <Route path='/dir_mgmt/dict/listing/precedence' element={<PrecedenceManagement />} />
+              <Route path='/dir_mgmt/dict/listing/receiver' element={<ReceiverManagement />} />
           </Routes>
         </BrowserRouter>
       </div>
