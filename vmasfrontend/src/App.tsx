@@ -11,6 +11,7 @@ import TargetCreateEdit from './components/TargetCreateEdit';
 import SectionManagement from './pages/SectionManagement';
 import SectionPermissionManagement from './pages/SectionPermissionManagement';
 import RoleSection from './pages/RoleSection';
+import SpeakerManagement from './pages/dictionaryManagement/SpeakerManagement';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
               <Route path='/users/create' element={<CreateUser />} />
               <Route path='/users/:id/edit' element={<CreateUser />} />
               <Route path='/users/:id/password/change' element={<PasswordChange />} />
+              <Route path='/dir_mgmt/dict/listing/speaker' element={<SpeakerManagement />} />
           </Routes>
         </BrowserRouter>
       </div>
