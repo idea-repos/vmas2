@@ -15,6 +15,7 @@ import SpeakerManagement from './pages/dictionaryManagement/SpeakerManagement';
 import PrecedenceManagement from './pages/dictionaryManagement/PrecedenceManagement';
 import ReceiverManagement from './pages/dictionaryManagement/ReceiverManagement';
 import KeywordManagement from './pages/dictionaryManagement/KeywordManagement';
+import LanguageManagement from './pages/dictionaryManagement/LanguageManagement';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
               <Route path='/dir_mgmt/dict/listing/precedence' element={<PrecedenceManagement />} />
               <Route path='/dir_mgmt/dict/listing/receiver' element={<ReceiverManagement />} />
               <Route path='/dir_mgmt/dict/listing/keyword' element={<KeywordManagement />} />
+              <Route path='/dir_mgmt/dict/listing/language' element={<LanguageManagement />} />
           </Routes>
         </BrowserRouter>
       </div>
