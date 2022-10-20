@@ -10,11 +10,14 @@ import _ from 'lodash';
 import { allTargets } from '../staticData';
 import CustomModal from '../components/common/CustomModal';
 import TargetViewTable from '../components/TargetViewTable';
+import { useDispatch } from 'react-redux';
 
 
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 
 function TargetManagement() {
+
+    const dispatch = useDispatch();
 
     const [targets, setTargets] = useState<target[]>([]);
     const [targetId, setTargetId] = useState(0);

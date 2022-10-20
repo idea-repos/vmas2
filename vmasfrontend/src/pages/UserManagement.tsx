@@ -1,10 +1,9 @@
 import axios from '../api/axios';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import UsersTable, { user } from '../components/UsersTable';
 import Pagination from '../components/common/Pagination';
 import _ from 'lodash';
 import { paginate } from '../utils/paginate';
-import { useState } from 'react';
 import PageBar from '../components/common/PageBar';
 import SearchBox from '../components/common/SearchBox';
 import ShowEntries from '../components/common/ShowEntries';
@@ -12,6 +11,8 @@ import { Alert, Button, Card, Row } from 'react-bootstrap';
 import Col from 'react-bootstrap/Col';
 import { useLocation } from 'react-router-dom';
 import CustomModal from '../components/common/CustomModal';
+import { useDispatch } from 'react-redux';
+import { loadUsers } from '../store/users';
 
 
 interface sortColumn {path:string, order : boolean | "asc" | "desc"};
@@ -19,6 +20,9 @@ interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 const GET_USERS_URL = 'api/users/'
 
 function UserManagement() {
+
+    const dispatch = useDispatch();
+
     const [show, setShow] = useState(false);
     const handleClose = () => {
         setUserId(0);
@@ -68,19 +72,7 @@ function UserManagement() {
     const {state} : {state:any} = useLocation();
 
     useEffect(() => {
-        const getUsers = async () => {
-            const {data} = await axios.get(GET_USERS_URL)
-            const userMani = data.map((user : user) => {
-                if (user.is_active == true) {
-                    user['is_active'] = 'active'
-                } else {
-                    user['is_active'] = 'inactive'
-                }
-                return user
-            })
-            setUsers(userMani)
-        }
-        getUsers();
+        dispatch(loadUsers())
     }, [])
 
     const getPageData = () => {
