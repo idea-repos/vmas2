@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import Table from './common/Table';
 import { Button } from 'react-bootstrap';
@@ -41,7 +40,7 @@ function UsersTable({users, sortColumn, onSort, openModalForDelete} : UserTableP
             label:'Last Login'
         },
         {   
-            path:'is_active', 
+            path:'status', 
             label:'Status'
         },
         {

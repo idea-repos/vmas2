@@ -18,8 +18,8 @@ const api : Middleware = ({ getState, dispatch }) => next => async (action : Act
         const response = await axios.request({
             baseURL: 'http://localhost:8000/',
             url : url,
-            method,
-            data
+            method : method,
+            data : data
         });
         dispatch({type: onSuccess, payload: response.data})
     } catch (error) {

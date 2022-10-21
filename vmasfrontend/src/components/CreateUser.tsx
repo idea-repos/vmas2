@@ -4,19 +4,22 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PageBar from './common/PageBar';
 import Container from 'react-bootstrap/Container';
 import axios from '../api/axios';
-import { AxiosError } from 'axios';
+import { role } from './RoleTable';
+import { useDispatch, useSelector, useStore } from 'react-redux';
+import { loadRoles } from '../store/roles';
+import { createUser, updateUser } from '../store/users';
 
-const CREATE_USER_URL = 'api/users/';
-const GET_ROLES = 'api/roles/'
 const DEFAULT_USER_ROLE = '5' // Operator 1
 const DEFAULT_USER_OFFICER = '0' // No one
 
 function CreateUser() {
     let params_user_id = useParams<string>();
+    
+    const dispatch = useDispatch();
+    const roles = useSelector((state:any) => state.entities.roles.list);
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [roles, setRoles] = useState<{id:number, name:string}[]>([]);
     const [group, setUserRole] = useState<string>(DEFAULT_USER_ROLE);
     const [is_active, setIsActive] = useState<any>();
     let [reporting_officer, setReportingOfficer] = useState<string | null>(DEFAULT_USER_OFFICER);
@@ -27,11 +30,7 @@ function CreateUser() {
     let navigate = useNavigate();
 
     useEffect(() => {
-        const getRoles = async () => {
-            const {data} = await axios.get(GET_ROLES)
-            setRoles(data)
-        }
-        getRoles();
+        dispatch(loadRoles())
     }, [])
 
     useEffect(() => {
@@ -58,7 +57,7 @@ function CreateUser() {
         setReportingOfficer(DEFAULT_USER_OFFICER);
     }, [group])
 
-    const handleSubmit = async (event : any) => {
+    const handleSubmit = (event : any) => {
         event.preventDefault();
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
@@ -67,37 +66,17 @@ function CreateUser() {
             if (password != confirmPassword) {
                 setErrResponse('Password not match')
                 return;
-            }
-            try {
-                const {data} = await axios.post(CREATE_USER_URL, JSON.stringify({username, password, group, reporting_officer}))
-                navigate('/users', {state : {message : data.message}})
-            } catch (e) {
-                const err = e as AxiosError
-                if (!err?.response)
-                    setErrResponse('Server Down Please Try Again Later')
-                else if (err.response.status == 409)
-                    setErrResponse('Username already exists')
-                else {
-                    setErrResponse('Something Went Wrong')
-                }
+            } else {
+                dispatch(createUser({username, password, group, reporting_officer}))
+                navigate('/users')
             }
         } else {
-            const EDIT_USER_URL = `api/users/${params_user_id.id}/`
-            try {
-                if (reporting_officer === '0') {
-                    reporting_officer = null
-                }
-                const {data} = await axios.put(EDIT_USER_URL, JSON.stringify({username,is_active ,group, reporting_officer}))
-                navigate('/users', {state : {message : data.message}})
-            } catch (e) {
-                const err = e as AxiosError
-                if (!err?.response) 
-                    setErrResponse('Server Down Please Try Again Later')
-                else
-                    setErrResponse('Something Went Wrong')
+            if (reporting_officer === '0') {
+                reporting_officer = null
             }
+            dispatch(updateUser(parseInt(params_user_id.id), {username,is_active ,group, reporting_officer}))
+            navigate('/users')
         }
-
         setValidated(true);
     };
     
@@ -169,7 +148,7 @@ function CreateUser() {
                         <InputGroup>
                             <InputGroup.Text id="inputGroupPrepend">Roles</InputGroup.Text>
                             <Form.Select value={group} onChange={ e => {setUserRole(e.target.value)}}>
-                                {roles.map(role => <option  key={role.id} value={role.id}>{role.name}</option>)}
+                                {roles.map((role : role) => <option  key={role.id} value={role.id}>{role.name}</option>)}
                             </Form.Select>
                         </InputGroup>
                     </Form.Group>

@@ -16,5 +16,5 @@ export default combineReducers({
     receivers: receiversReducer,
     category: categoryReducer,
     languages: languagesReducer,
-    regions: regionsReducer.
+    regions: regionsReducer,
 });

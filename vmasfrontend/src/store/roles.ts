@@ -37,7 +37,7 @@ const rolesSlice = createSlice({
             roles.list[index].reports_to = action.payload.reports_to
         },
         roleDeleted : (roles, action) => {
-            roles.list.filter(role => role.id != action.payload.id);
+            roles.list = roles.list.filter(role => role.id != action.payload.id);
         }
     }
 });
