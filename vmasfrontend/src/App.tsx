@@ -20,6 +20,7 @@ import LanguageManagement from './pages/dictionaryManagement/LanguageManagement'
 import CategoryManagement from './pages/dictionaryManagement/CategoryManagement';
 import SourceManagement from './pages/dictionaryManagement/SourceManagement';
 import SourceAddEdit from './components/dictionary/SourceAddEdit';
+import RegionManagement from './pages/dictionaryManagement/RegionManagement';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
               <Route path='/dir_mgmt/dict/listing/category' element={<CategoryManagement />} />
               <Route path='/dir_mgmt/dict/listing/source/:id' element={<SourceAddEdit />} />
               <Route path='/dir_mgmt/dict/listing/source' element={<SourceManagement />} />
+              <Route path='/dir_mgmt/dict/listing/region' element={<RegionManagement />} />
           </Routes>
         </BrowserRouter>
       </div>
