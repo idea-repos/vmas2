@@ -16,13 +16,26 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 "no_active_account",
             )
             
-        data.update({'user': UserSerializer(self.user).data})
+        user = {'user': UserSerializer(self.user).data}
         
-        permissions = getuserperms(self.user)
-        data.update({'perms': PermissionSerializer(permissions, many=True).data})
+        del user['user']['last_login']
+        del user['user']['is_active']
+        del user['user']['reporting_officer']
+        del user['user']['status']
+        
+        data.update(user)
+        
+        sections = getuserperms(self.user, "sections")
+        data.update({'sections': LoginSerializer(sections, many=True).data})
         data.update({'message': "User Authenticated."})
         return data
+ 
+class LoginSerializer(serializers.ModelSerializer):
     
+    class Meta:
+        model = Section
+        fields = ["id", "section_name"]
+           
 class SectionSerializer(serializers.ModelSerializer):
     allowed = serializers.BooleanField(required=False)
     
@@ -40,7 +53,23 @@ class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
         fields = ["id", "perm_section", "perms_title", "section_name", "section", "section_allowed", "group_perm_allowed","perm_allowed"]
-      
+        extra_kwargs = {
+            'section': {'write_only': True}
+        }
+        
+class SectionPermSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ["id", "perms_title"]
+
+class UserPermSerializer(serializers.ModelSerializer):
+    permissions = PermissionSerializer(many=True)
+    section_allowed = serializers.BooleanField()
+    
+    class Meta:
+        model = Section
+        fields = ["id", "section_name", "section_allowed", "permissions"]
+        
 class GroupSerializer(serializers.ModelSerializer):
     
     users_count = serializers.SerializerMethodField('get_users_count')

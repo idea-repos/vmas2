@@ -18,9 +18,11 @@ def update_object(self,request):
     if upd_obj.is_valid():
         upd_obj.save()   
     return upd_obj     
-        
-def getuserperms(user):
+
+def getuserperms(user, level):
+    
     user_perms = user.permissions.values()
+    sections = Section.objects.all()
     
     if user.group is not None:
         user_sections = user.group.sections.values()
@@ -29,19 +31,61 @@ def getuserperms(user):
         user_sections = []
         group_perms = []
                 
-    permissions = Permission.objects.all()
-    
-    for permission in permissions:
-        permission.section_allowed = next((True for user_section in user_sections if permission.section.id == user_section["id"]), False)   
-        permission.group_perm_allowed = next((True for group_perm in group_perms if permission.id == group_perm["id"]), False)                         
-        permission.section_name = Section.objects.get(id=permission.section.id).section_name
-        if permission.section_allowed:
-            permission.perm_allowed = True  
-            permission.group_perm_allowed = True
-        elif permission.group_perm_allowed:
-            permission.perm_allowed = True
-        else:
-            permission.perm_allowed = next((True for user_perm in user_perms if permission.id == user_perm["id"]), False)   
+                
+    if level == "permissions":
+        perms_list = []
+        
+        for section in sections:
+            section_dict = {}
+            section_dict["id"] = section.id
+            section_dict["section_name"] = section.section_name
+            section_dict["section_allowed"] = next((True for user_section in user_sections if section.id == user_section["id"]), False)   
             
-    return permissions            
+            permissions = Permission.objects.filter(section=section).order_by('id')   
+            perm_list = []
+            if permissions is not None:
+                for permission in permissions:
+                    perm_dict = {}
+                    perm_dict["id"] = permission.id
+                    perm_dict["perm_section"] = permission.perm_section
+                    perm_dict["perms_title"] = permission.perms_title
+                    perm_dict["group_perm_allowed"] = next((True for group_perm in group_perms if permission.id == group_perm["id"]), False)                     
+                    
+                    if section_dict["section_allowed"]:
+                        perm_dict["perm_allowed"] = True  
+                        perm_dict["group_perm_allowed"] = True
+                    elif perm_dict["group_perm_allowed"]:
+                        perm_dict["perm_allowed"] = True
+                    else:
+                        perm_dict["perm_allowed"] = next((True for user_perm in user_perms if permission.id == user_perm["id"]), False)   
+                    perm_list.append(perm_dict)
+                
+                section_dict["permissions"] = perm_list 
+                perms_list.append(section_dict) 
+              
+        print(perms_list)
+        return perms_list       
+    elif level == "sections":
+        user_section_list = list(user_sections)
+        
+        for user_perm in user_perms:
+            user_section_allowed = next(section for section in sections if section.id == user_perm["section_id"])
+            section_dict = {}
+            section_dict["id"] = user_section_allowed.id
+            section_dict["section_name"] = user_section_allowed.section_name
+            user_section_list.append(section_dict)
+
+        return user_section_list
+             
+def getperms(user,section_id): 
+    perms = []
+    section = Section.objects.get(id=section_id)
+    section_perms = Permission.objects.filter(section=section)
+    user_perms = user.permissions.values()
+    
+    for user_perm in user_perms:
+        for section_perm in section_perms:
+            if user_perm["id"] == section_perm.id:
+                perms.append(user_perm)  
+    return perms
         

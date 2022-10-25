@@ -1,34 +1,29 @@
+from decimal import setcontext
 import json
 from rest_framework.response import Response
-from .serializers import GroupSerializer, PermissionSerializer, UserSerializer, \
-                         SectionSerializer, ReportingOfficerSerializer, CustomTokenObtainPairSerializer
+from .serializers import GroupSerializer, PermissionSerializer, UserSerializer, SectionPermSerializer, \
+                         SectionSerializer, ReportingOfficerSerializer, CustomTokenObtainPairSerializer, \
+                         UserPermSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from .models import Group, Section, User, Permission
-from .utils import create_object, getuserperms, update_object
+from .utils import create_object, getuserperms, update_object, getperms
 from django.contrib.auth.hashers import make_password
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import ObjectDoesNotExist
 
 
-# Create your views here.
+# Create your views here.      
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
                             
 class GroupAddUpdateDelete(ModelViewSet):    
+    queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        groups = Group.objects.all()
-        return(groups)
-        
-    def list(self, request):
-        groups = Group.objects.all()
-        return Response(self.serializer_class(groups, many=True).data,
-                        status=status.HTTP_200_OK)
         
     def retrieve(self,request, pk=None):
         group = self.get_object()
@@ -139,18 +134,10 @@ class GroupAddUpdateDelete(ModelViewSet):
 
 class UserAddUpdateDelete(ModelViewSet):    
     
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        users = User.objects.all()
-        return(users)
-        
-    def list(self, request):
-        users = User.objects.all()
-        return Response(self.serializer_class(users, many=True).data,
-                        status=status.HTTP_200_OK)
-        
+          
     def retrieve(self,request, pk=None):
         user = self.get_object()
         return Response(self.serializer_class(user).data, status=status.HTTP_200_OK)
@@ -218,8 +205,8 @@ class UserAddUpdateDelete(ModelViewSet):
     @action(methods=['get'], detail=True,  url_path="get-permissions")
     def get_permission(self, request,*args, **kwargs):
         try:
-            permissions = getuserperms(self.get_object())
-            serializer = PermissionSerializer(permissions, many=True)
+            permissions = getuserperms(self.get_object(), "permissions")
+            serializer = UserPermSerializer(permissions, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
@@ -241,15 +228,11 @@ class UserAddUpdateDelete(ModelViewSet):
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
         
-           
 class ReportingOfficers(ModelViewSet):
+    queryset = User.objects.all()
     serializer_class = ReportingOfficerSerializer
-    
-    def get_queryset(self):
-        users = User.objects.all()
-        return(users)
+    permission_classes = [IsAuthenticated]
     
     def retrieve(self,request, pk=None):
         
@@ -259,19 +242,33 @@ class ReportingOfficers(ModelViewSet):
         else:
             users = User.objects.filter(group_id=reports_to_id)
         return Response(self.serializer_class(users, many=True).data, status=status.HTTP_200_OK)
-       
-class SectionAddUpdateDelete(ModelViewSet):
-    serializer_class = SectionSerializer
+    
+class UserPermsForSection(ModelViewSet):
+    queryset = Permission.objects.all()
+    serializer_class = SectionPermSerializer
     permission_classes = [IsAuthenticated]
     
-    def get_queryset(self):
-        sections = Section.objects.all()
-        return(sections)
+    def retrieve(self,request, pk=None):   
+        data = json.loads(request.body.decode('utf-8'))
+        user = User.objects.get(id=pk)
+        group = user.group
+        perms = []
         
-    def list(self, request):
-        sections = Section.objects.all()
-        return Response(self.serializer_class(sections, many=True).data,
-                        status=status.HTTP_200_OK)
+        if group is not None:
+            try:
+                section = group.sections.get(id=data["section_id"])
+                perms = Permission.objects.filter(section=section)
+            except ObjectDoesNotExist:
+                perms = getperms(user,data["section_id"])
+        else:
+            perms = getperms(user,data["section_id"])
+                
+        return Response(self.serializer_class(perms, many=True).data, status=status.HTTP_200_OK)
+       
+class SectionAddUpdateDelete(ModelViewSet):
+    queryset = Section.objects.all()
+    serializer_class = SectionSerializer
+    permission_classes = [IsAuthenticated]
         
     def retrieve(self,request, pk=None):
         section = self.get_object()
@@ -313,17 +310,9 @@ class SectionAddUpdateDelete(ModelViewSet):
            
         
 class PermissionAddUpdateDelete(ModelViewSet):
+    queryset = Permission.objects.all()
     serializer_class = PermissionSerializer
     permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        permissions = Permission.objects.all()
-        return(permissions)
-        
-    def list(self, request):
-        permissions = Permission.objects.all()
-        return Response(self.serializer_class(permissions, many=True).data,
-                        status=status.HTTP_200_OK)
         
     def retrieve(self,request, pk=None):
         permission = self.get_object()
