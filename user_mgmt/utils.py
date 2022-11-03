@@ -63,7 +63,6 @@ def getuserperms(user, level):
                 section_dict["permissions"] = perm_list 
                 perms_list.append(section_dict) 
               
-        print(perms_list)
         return perms_list       
     elif level == "sections":
         user_section_list = list(user_sections)

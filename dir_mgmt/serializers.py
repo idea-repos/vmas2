@@ -1,15 +1,12 @@
 from rest_framework import serializers
 from .models import TargetTags
-from bson.objectid import ObjectId
-from bson.errors import InvalidId
-from django.utils.encoding import smart_str as smart_text
 
 class TargetSerializer(serializers.ModelSerializer):
     created_on = serializers.SerializerMethodField('get_created_on')
       
     class Meta:
         model = TargetTags
-        fields = ["_id", "name", "description", "tags", "created_on"]
+        fields = ["_id", "name", "created_on"]
         
     def get_created_on(self, objTarget):
         global created_on
@@ -19,3 +16,11 @@ class TargetSerializer(serializers.ModelSerializer):
                 return objTarget.created_on.strftime("%Y/%m/%d %H:%M")
             else:
                 return " "      
+            
+            
+class TargetTagsSerializer(serializers.ModelSerializer):
+      
+    class Meta:
+        model = TargetTags
+        fields = ["_id", "name", "description", "tags"]
+        

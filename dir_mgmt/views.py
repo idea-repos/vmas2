@@ -1,41 +1,39 @@
-from venv import create
 from rest_framework.response import Response
-from .serializers import TargetSerializer
+from .serializers import TargetSerializer, TargetTagsSerializer
 from rest_framework.viewsets import ModelViewSet
 from .models import TargetTags
 from rest_framework import status
 from rest_framework.decorators import action
 from .utils import create_object, delete_object,update_object
 from bson.objectid import ObjectId
-
+from rest_framework.permissions import IsAuthenticated
+from .datatable import DataTablesServer
 
 # Create your views here.
                    
 class TargetAddUpdateDelete(ModelViewSet):    
+    queryset = TargetTags.objects.all()  
     serializer_class = TargetSerializer
-    
-    def get_queryset(self):
-       targets = TargetTags.objects.all()   
-       return(targets)
-        
+    permission_classes = [IsAuthenticated]
+       
     def list(self, request):
-        targets = TargetTags.objects.all()      
-        jsondata = self.serializer_class(targets, many=True).data
-        for data in jsondata:
-            data['tags'] = next(target.tags for target in targets if data["name"] == target.name)             
-                
-        return Response(jsondata, status=status.HTTP_200_OK)
+        columns = ["_id", "name", "created_on"]
+        index_column = "_id"
+        collection = "Target_tags"
         
+        data = DataTablesServer(request, columns, index_column, collection).output_result()
+        return Response(data, status=status.HTTP_200_OK)
+ 
     def retrieve(self,request, pk=None):
         target = TargetTags.objects.get(_id=ObjectId(pk))
-        jsondata = self.serializer_class(target).data
+        jsondata = TargetTagsSerializer(target).data
         jsondata['tags'] = target.tags
         return Response(jsondata, status=status.HTTP_200_OK)
     
     def create(self,request,*args,**kwargs):
         
         try:  
-           newtarget = create_object(self.serializer_class, request)
+           newtarget = create_object(TargetTagsSerializer, request)
            
            if newtarget.errors:
               return Response(newtarget.errors,status=status.HTTP_400_BAD_REQUEST) 
@@ -47,7 +45,7 @@ class TargetAddUpdateDelete(ModelViewSet):
                 
     def update(self,request,pk=None,*args,**kwargs):
         try:
-            target = update_object(self,request,pk)
+            target = update_object(TargetTagsSerializer,request,pk)
             
             if target.errors:
                return Response(target.errors,status=status.HTTP_400_BAD_REQUEST) 
