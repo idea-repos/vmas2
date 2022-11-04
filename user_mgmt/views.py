@@ -59,8 +59,8 @@ class GroupAddUpdateDelete(ModelViewSet):
            if newgroup.errors:
               return Response(newgroup.errors,status=status.HTTP_400_BAD_REQUEST) 
            else:
-              print("errors:" ,newgroup.errors)
-              return Response("Role Created Successfully",status=status.HTTP_201_CREATED)
+              # must return same data for updating store
+              return Response({'message' : "Role Created Successfully", 'data':newgroup.data},status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -72,7 +72,8 @@ class GroupAddUpdateDelete(ModelViewSet):
             if group.errors:
                return Response(group.errors,status=status.HTTP_400_BAD_REQUEST) 
             else:
-               return Response("Role Updated Successfully",status=status.HTTP_201_CREATED)
+                # must return same data for updating store
+               return Response({'message': "Role Updated Successfully", 'data':group.data},status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -300,7 +301,7 @@ class SectionAddUpdateDelete(ModelViewSet):
            if newsection.errors:
               return Response(newsection.errors,status=status.HTTP_400_BAD_REQUEST) 
            else:
-              return Response("Section Created Successfully",status=status.HTTP_201_CREATED)
+              return Response({'message':"Section Created Successfully", 'data':newsection.data},status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -312,7 +313,7 @@ class SectionAddUpdateDelete(ModelViewSet):
             if section.errors:
                return Response(section.errors,status=status.HTTP_400_BAD_REQUEST) 
             else:
-               return Response("Section Updated Successfully",status=status.HTTP_201_CREATED)
+               return Response({'message' : "Section Updated Successfully", 'data':section.data},status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -351,7 +352,7 @@ class PermissionAddUpdateDelete(ModelViewSet):
             if newperm.errors:
                 return Response(newperm.errors,status=status.HTTP_400_BAD_REQUEST) 
             else:
-                return Response("Permission Created Successfully",status=status.HTTP_201_CREATED)
+                return Response({'message' : "Permission Created Successfully", 'data': newperm.data},status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -363,13 +364,13 @@ class PermissionAddUpdateDelete(ModelViewSet):
             if perm.errors:
                return Response(perm.errors,status=status.HTTP_400_BAD_REQUEST) 
             else:
-               return Response("Permission Updated Successfully",status=status.HTTP_201_CREATED)
+               return Response({'message' : "Permission Updated Successfully", 'data':perm.data},status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def destroy(self,request,pk=None,*args,**kwargs):
         super(PermissionAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
-        return Response("Permission Deleted Successfully.", status=status.HTTP_200_OK)
+        return Response({'message' : "Permission Deleted Successfully.", 'data':pk}, status=status.HTTP_200_OK)
     
     

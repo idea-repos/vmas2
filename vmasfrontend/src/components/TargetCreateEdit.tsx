@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Col, Container, Form, InputGroup, Row, Button } from 'react-bootstrap';
 import PageBar from './common/PageBar';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getDataById } from '../staticData';
-import { targetDetail } from './TargetTable';
+import { targetDetail } from '../types';
 
 
 function TargetCreateEdit() {

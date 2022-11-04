@@ -4,20 +4,22 @@ import { Button, Card, Col, Container, Row } from 'react-bootstrap';
 import ShowEntries from '../components/common/ShowEntries';
 import SearchBox from '../components/common/SearchBox';
 import Pagination from '../components/common/Pagination';
-import TargetTable, { target, targetDetail } from '../components/TargetTable';
+import TargetTable from '../components/TargetTable';
 import { paginate } from '../utils/paginate';
 import _ from 'lodash';
 import { allTargets } from '../staticData';
 import CustomModal from '../components/common/CustomModal';
 import TargetViewTable from '../components/TargetViewTable';
-import { useDispatch } from 'react-redux';
+import { target, sortColumn } from '../types';
 
-
-interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 
 function TargetManagement() {
-
+ 
+    /*
+    backend not implemented, all data are static
     const dispatch = useDispatch();
+    const fetchTargets = useSelector((state : any) => state.entities.targets.list);
+    */
 
     const [targets, setTargets] = useState<target[]>([]);
     const [targetId, setTargetId] = useState(0);

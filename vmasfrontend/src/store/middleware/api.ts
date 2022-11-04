@@ -6,7 +6,7 @@ import * as actions from '../api';
 export interface Action<T = any> {
     type: T,
     payload: any
-  }
+}
 
 const api : Middleware = ({ getState, dispatch }) => next => async (action : Action) => {
     if (action.type !== actions.apiCallBegan.type)

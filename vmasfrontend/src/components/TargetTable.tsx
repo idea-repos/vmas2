@@ -1,28 +1,9 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { sortColumn, target } from '../types';
 import Table from './common/Table';
 
-export interface targetDetail {
-    id: number
-    attribute : string,
-    condition: string,
-    value: string
-}
-
-export interface target {
-    id : number;
-    name : string;
-    created_at : Date | number;
-    notes: string;
-    description?: string;
-    details: targetDetail[]
-}
-
-export interface sortColumn {
-    path: string,
-    order : boolean | "asc" | "desc"
-}
 
 interface TargetTableProps {
     targets: target[];

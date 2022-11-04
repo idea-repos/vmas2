@@ -1,6 +1,5 @@
-import axios from '../api/axios';
 import React, { useEffect, useState } from 'react';
-import UsersTable, { user, sortColumn } from '../components/UsersTable';
+import UsersTable from '../components/UsersTable';
 import Pagination from '../components/common/Pagination';
 import _ from 'lodash';
 import { paginate } from '../utils/paginate';
@@ -13,6 +12,7 @@ import { useLocation } from 'react-router-dom';
 import CustomModal from '../components/common/CustomModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteUser, loadUsers } from '../store/users';
+import { sortColumn, user } from '../types';
 
 
 function UserManagement() {
@@ -61,6 +61,7 @@ function UserManagement() {
     const {state} : {state:any} = useLocation();
 
     useEffect(() => {
+        // enhance performance (use memoize, callBack fn here)
         dispatch(loadUsers())
     }, [])
 
@@ -116,17 +117,17 @@ function UserManagement() {
             </div>
 
             <CustomModal 
-                    heading='Delete User'
-                    buttons={[
-                                <Button onClick={() => handleDelete(false)} variant="warning">Soft Delete</Button>,
-                                <Button onClick={() => handleDelete(true)} variant="danger">Hard Delete</Button>]}
-                    show={show}
-                    onHide={handleClose}
-                    >
-                    <Card body>
-                        Deleting User From Database (Go For Hard Delete)
-                        Securing Data Of User (Go For Soft Delete)
-                    </Card>
+                heading='Delete User'
+                buttons={[
+                            <Button onClick={() => handleDelete(false)} variant="warning">Soft Delete</Button>,
+                            <Button onClick={() => handleDelete(true)} variant="danger">Hard Delete</Button>]}
+                show={show}
+                onHide={handleClose}
+                >
+                <Card body>
+                    Deleting User From Database (Go For Hard Delete)
+                    Securing Data Of User (Go For Soft Delete)
+                </Card>
             </CustomModal>
         </React.Fragment>
     )

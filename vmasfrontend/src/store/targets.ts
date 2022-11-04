@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { target } from "../components/TargetTable";
+import { target } from "../types";
 import { apiCallBegan } from './api';
+import { METHOD_DELETE, METHOD_GET, METHOD_POST, METHOD_PUT } from "./http";
 
 interface InitialState {
     list : target[],
@@ -50,4 +51,7 @@ export default targetsSlice.reducer
 export const {targetCreated, targetUpdated, targetDeleted, targetsReceived} = targetsSlice.actions
 
 //Action Creator
-export const loadTargets = () => apiCallBegan(GET_URL_TARGETS, targetsReceived.type)
+export const loadTargets = () => apiCallBegan(GET_URL_TARGETS, targetsReceived.type, METHOD_GET)
+export const createTarget = (data:any) => apiCallBegan(`${GET_URL_TARGETS}/`, targetCreated.type, METHOD_POST, data)
+export const updateTarget = (id:number, data:any) => apiCallBegan(`${GET_URL_TARGETS}/${id}`, targetUpdated.type, METHOD_PUT, data)
+export const deleteTarget = (id:number) => apiCallBegan(`${GET_URL_TARGETS}/${id}`, targetDeleted.type, METHOD_DELETE)

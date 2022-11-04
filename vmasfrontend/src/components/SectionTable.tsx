@@ -1,19 +1,8 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
+import { section, sortColumn } from '../types';
 import Table from './common/Table';
 
-
-export interface sortColumn {
-    path: string,
-    order : boolean | "asc" | "desc"
-}
-
-export interface section {
-    id: number;
-    section_name: string,
-    section_desc: string,
-    status: true
-}
 
 interface SectionTableProps {
     sections : section[];

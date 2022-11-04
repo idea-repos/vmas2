@@ -10,5 +10,7 @@ export const apiCallBegan = createAction('api/callBegan', function prepare(url: 
         }
     }
 })
+// generic (common) action for flash message on success on pending
 export const apiCallSuccess = createAction('api/callSuccess')
+// generic (common) action for flash message on failed on pending
 export const apiCallFailed = createAction('api/callFailed')

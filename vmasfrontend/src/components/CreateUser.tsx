@@ -4,56 +4,54 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PageBar from './common/PageBar';
 import Container from 'react-bootstrap/Container';
 import axios from '../api/axios';
-import { role } from './RoleTable';
 import { useDispatch, useSelector, useStore } from 'react-redux';
-import { loadRoles } from '../store/roles';
+import { loadOfficerByRole, loadRoles } from '../store/roles';
 import { createUser, updateUser } from '../store/users';
+import { role } from '../types';
 
 const DEFAULT_USER_ROLE = '5' // Operator 1
 const DEFAULT_USER_OFFICER = '0' // No one
 
 function CreateUser() {
-    let params_user_id = useParams<string>();
+    let userID = useParams<string>()?.id;
+    let navigate = useNavigate();
     
+    if (userID == null || userID == undefined) {
+        navigate('/users');
+    }
+
     const dispatch = useDispatch();
-    const roles = useSelector((state:any) => state.entities.roles.list);
+    const roles : role[] = useSelector((state:any) => state.entities.roles.list);
+    const officerByRole : {id:number, username:string}[] = useSelector((state:any) => state.entities.roles.officerList);
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [group, setUserRole] = useState<string>(DEFAULT_USER_ROLE);
     const [is_active, setIsActive] = useState<any>();
     let [reporting_officer, setReportingOfficer] = useState<string | null>(DEFAULT_USER_OFFICER);
-    const [allReportingOfficer, setAllReportinOfficer] = useState<{id:number, username:string}[]>([]);
     const [confirmPassword, setConfirmPassword] = useState('');
     const [errResponse, setErrResponse] = useState('');
     const [validated, setValidated] = useState(false);
-    let navigate = useNavigate();
 
     useEffect(() => {
         dispatch(loadRoles())
     }, [])
 
     useEffect(() => {
-        if (params_user_id?.id != null) {
-            const SINGLE_USER_URL = `api/users/${params_user_id.id}/`;
-            const getSingleUser = async () => {
-                const {data} = await axios.get(SINGLE_USER_URL)
-                setUsername(data.username)
-                setIsActive(data.is_active)
-                setUserRole(data.group)
-                setReportingOfficer(data.reporting_officer)
-            }
-            getSingleUser();
+        const SINGLE_USER_URL = `api/users/${userID}/`;
+        const getSingleUser = async () => {
+            const {data} = await axios.get(SINGLE_USER_URL)
+            setUsername(data.username)
+            setIsActive(data.is_active)
+            setUserRole(data.group)
+            setReportingOfficer(data.reporting_officer)
         }
-    }, [params_user_id])
+        getSingleUser();
+    }, [userID])
 
     useEffect(() => {
-        const REPORTIN_USER_URL = `api/reportofficer/${group}/`;
-        const getAllReportingUsers = async () => {
-            const {data} = await axios.get(REPORTIN_USER_URL);
-            setAllReportinOfficer(data);
-        }
-        getAllReportingUsers();
+        dispatch(loadOfficerByRole(parseInt(group)));
+        // problem (on refreshing page reporting officer set to default user insead of )
         setReportingOfficer(DEFAULT_USER_OFFICER);
     }, [group])
 
@@ -62,7 +60,7 @@ function CreateUser() {
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
             event.stopPropagation();
-        } else if (params_user_id?.id == null){
+        } else if (userID == null){
             if (password != confirmPassword) {
                 setErrResponse('Password not match')
                 return;
@@ -74,7 +72,7 @@ function CreateUser() {
             if (reporting_officer === '0') {
                 reporting_officer = null
             }
-            dispatch(updateUser(parseInt(params_user_id.id), {username,is_active ,group, reporting_officer}))
+            dispatch(updateUser(parseInt(userID), {username,is_active ,group, reporting_officer}))
             navigate('/users')
         }
         setValidated(true);
@@ -82,7 +80,7 @@ function CreateUser() {
     
     return (
         <>
-            <PageBar title={params_user_id.id != null ? 'Edit User' : 'Create New User'}/>
+            <PageBar title={userID != null ? 'Edit User' : 'Create New User'}/>
             <Container className='my-5'>
                 <Form noValidate validated={validated} onSubmit={handleSubmit}>
                     <Form.Group className="mb-3" controlId="username">
@@ -100,11 +98,11 @@ function CreateUser() {
                         </InputGroup>
                     </Form.Group>
                     {
-                        params_user_id?.id != null ? 
+                        userID != null ? 
                                                 <> 
                                                     <label className="form-label">Password</label>
                                                     <div className="form-text mb-3">
-                                                        Raw passwords are not stored, so there is no way to see this user's password, but you can change the password using <a href={`../../users/${params_user_id.id}/password/change`} className='link'>this form </a>
+                                                        Raw passwords are not stored, so there is no way to see this user's password, but you can change the password using <a href={`../../users/${userID}/password/change`} className='link'>this form </a>
                                                     </div>
                                                     <Form.Check
                                                         defaultChecked={is_active}
@@ -148,7 +146,7 @@ function CreateUser() {
                         <InputGroup>
                             <InputGroup.Text id="inputGroupPrepend">Roles</InputGroup.Text>
                             <Form.Select value={group} onChange={ e => {setUserRole(e.target.value)}}>
-                                {roles.map((role : role) => <option  key={role.id} value={role.id}>{role.name}</option>)}
+                                {roles.map(role => <option  key={role.id} value={role.id}>{role.name}</option>)}
                             </Form.Select>
                         </InputGroup>
                     </Form.Group>
@@ -158,7 +156,7 @@ function CreateUser() {
                             <InputGroup.Text id="inputGroupPrepend">Reporting Officer</InputGroup.Text>
                             <Form.Select value={reporting_officer == null ? '0':reporting_officer} onChange={e => {setReportingOfficer(e.target.value)}}>
                                 <option disabled value='0'></option>
-                                {allReportingOfficer.map(officer => <option key={officer.id} value={officer.id}>{officer.username}</option>)}
+                                {officerByRole.map(officer => <option key={officer.id} value={officer.id}>{officer.username}</option>)}
                             </Form.Select>
                         </InputGroup>
                     </Form.Group>

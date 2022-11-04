@@ -1,19 +1,8 @@
 import React from 'react';
 import Table from './common/Table';
 import { Button } from 'react-bootstrap';
+import { role, sortColumn } from '../types';
 
-
-export interface role {
-    id : number;
-    name : string,
-    users_count : number,
-    reports_to : string,
-}
-
-interface sortColumn {
-    path: string,
-    order : boolean | "asc" | "desc"
-}
 
 interface RoleTableProps {
     roles : role[],
