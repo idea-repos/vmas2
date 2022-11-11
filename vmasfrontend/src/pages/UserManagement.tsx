@@ -1,10 +1,8 @@
-import axios from '../api/axios';
-import React, { useEffect } from 'react';
-import UsersTable, { user } from '../components/UsersTable';
+import React, { useEffect, useState } from 'react';
+import UsersTable from '../components/UsersTable';
 import Pagination from '../components/common/Pagination';
 import _ from 'lodash';
 import { paginate } from '../utils/paginate';
-import { useState } from 'react';
 import PageBar from '../components/common/PageBar';
 import SearchBox from '../components/common/SearchBox';
 import ShowEntries from '../components/common/ShowEntries';
@@ -12,13 +10,15 @@ import { Alert, Button, Card, Row } from 'react-bootstrap';
 import Col from 'react-bootstrap/Col';
 import { useLocation } from 'react-router-dom';
 import CustomModal from '../components/common/CustomModal';
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteUser, loadUsers } from '../store/users';
+import { sortColumn, user } from '../types';
 
-
-interface sortColumn {path:string, order : boolean | "asc" | "desc"};
-
-const GET_USERS_URL = 'api/users/'
 
 function UserManagement() {
+
+    const dispatch = useDispatch();
+    const fetchUsers = useSelector((state : any) => state.entities.users.list);
     const [show, setShow] = useState(false);
     const handleClose = () => {
         setUserId(0);
@@ -26,25 +26,18 @@ function UserManagement() {
     }
     const handleShow = () => setShow(true);
 
-    const [users, setUsers] = useState<user[]>([]);
     const [pageSize, setPageSize] = useState<number>(5);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [userId, setUserId] = useState(0);
     const [sortColumn, setSortColumn] = useState<sortColumn>({path:'username', order:"asc"});
-    const [flashMessage, setFlashMessage] = useState('');
+    const [_flashMessage, setFlashMessage] = useState('');
     
 
-    const handleDelete =  async (hardDelete:boolean) => {
-        const DELETE_USER_URL = `api/users/${userId}`
-        try {
-            const {data} = await axios.delete(DELETE_USER_URL, { data: { hard_delete: hardDelete } })
-            setFlashMessage(data.message)
-            setUsers(users.filter(user => user.id !== userId))
-            handleClose()
-        } catch (e) {
-            console.log('getting errror from backend')
-        }
+    const handleDelete =  (hardDelete:boolean) => {
+        dispatch(deleteUser(userId, hardDelete))
+        handleClose()
+        setFlashMessage('User Deleted Succesfully');
     }
 
     const openModalForDelete = (id:number) => {
@@ -68,26 +61,15 @@ function UserManagement() {
     const {state} : {state:any} = useLocation();
 
     useEffect(() => {
-        const getUsers = async () => {
-            const {data} = await axios.get(GET_USERS_URL)
-            const userMani = data.map((user : user) => {
-                if (user.is_active == true) {
-                    user['is_active'] = 'active'
-                } else {
-                    user['is_active'] = 'inactive'
-                }
-                return user
-            })
-            setUsers(userMani)
-        }
-        getUsers();
+        // enhance performance (use memoize, callBack fn here)
+        dispatch(loadUsers())
     }, [])
 
     const getPageData = () => {
-        let filtered = users;
+        let filtered = (fetchUsers as user[]);
         
         if (searchQuery) {
-            filtered = users.filter(user => user.username.toLowerCase().startsWith(searchQuery.toLowerCase()));
+            filtered  = filtered.filter(user => user.username.toLowerCase().startsWith(searchQuery.toLowerCase()));
         } 
 
         const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
@@ -135,17 +117,17 @@ function UserManagement() {
             </div>
 
             <CustomModal 
-                    heading='Delete User'
-                    buttons={[
-                                <Button onClick={() => handleDelete(false)} variant="warning">Soft Delete</Button>,
-                                <Button onClick={() => handleDelete(true)} variant="danger">Hard Delete</Button>]}
-                    show={show}
-                    onHide={handleClose}
-                    >
-                    <Card body>
-                        Deleting User From Database (Go For Hard Delete)
-                        Securing Data Of User (Go For Soft Delete)
-                    </Card>
+                heading='Delete User'
+                buttons={[
+                            <Button onClick={() => handleDelete(false)} variant="warning">Soft Delete</Button>,
+                            <Button onClick={() => handleDelete(true)} variant="danger">Hard Delete</Button>]}
+                show={show}
+                onHide={handleClose}
+                >
+                <Card body>
+                    Deleting User From Database (Go For Hard Delete)
+                    Securing Data Of User (Go For Soft Delete)
+                </Card>
             </CustomModal>
         </React.Fragment>
     )

@@ -1,19 +1,19 @@
-import { AxiosError } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Button, Form, InputGroup, Alert, Card } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
-import axios from '../api/axios';
 import CustomModal from '../components/common/CustomModal';
 import PageBar from '../components/common/PageBar';
-import PermissionTable, { permission } from '../components/PermissionTable';
+import PermissionTable from '../components/PermissionTable';
+import { sortColumn, permission } from '../types';
+import { useDispatch, useSelector } from 'react-redux';
+import { createPermissionForSection, deletePermissionForSection, loadPermissionsForSection, updatePermissionForSection } from '../store/sections';
 
-
-interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 
 function SectionPermissionManagement() {
-    const params = useParams();
-    const section_id = params?.id;
-
+    const section_id = useParams()?.id;
+    const dispatch = useDispatch();
+    const allPermissions : permission[] = useSelector((state:any) => state.entities.sections.sectionPermissions)
+    
     const [showDelete, setShowDelete] = useState(false);
     const handleCloseDelete = () => {
         setPermID(0);
@@ -43,7 +43,6 @@ function SectionPermissionManagement() {
     }
 
     const [sortColumn, setSortColumn] = useState<sortColumn>({path:'perm_title', order:"asc"});
-    const [allPermissions, setAllPermissions] = useState<permission[]>([])
     const [permID, setPermID] = useState(0);
     const [validated, setValidated] = useState(false);
     const [perm_section, setPermName] = useState('');
@@ -51,41 +50,27 @@ function SectionPermissionManagement() {
     const [flashMessage, setFlashMessage] = useState('');
 
 
-    const handleSubmit = async (e : React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget;
         if (form.checkValidity() == false) {
             e.stopPropagation();
         } else {
-            try {
-                if (permID === 0) {
-                    const {data} = await axios.post(`/api/permissions/`, JSON.stringify({perm_section, perms_title, section:section_id}));
-                    setFlashMessage('Permission successfully added');
-                } else {
-                    // edit existing permission of a section
-                    const {data} = await axios.put(`api/permissions/${permID}/`, JSON.stringify({perm_section, perms_title}));
-                    setFlashMessage('Permission successfully updated');
-                }
-                handleClose()
-            } catch (e) {
-                const err = e as AxiosError;
-                console.log('handle error')
+            if (permID === 0) {
+                // error need to confirm the url for creating permission of a section
+                dispatch(createPermissionForSection(section_id, {perm_section, perms_title}))
+                setFlashMessage('Permission successfully added');
+            } else {
+                dispatch(updatePermissionForSection(permID, {perm_section, perms_title}))
+                setFlashMessage('Permission successfully updated');
             }
+            handleClose()
         }
         setValidated(true);
     }
 
     useEffect(() => {
-        const getPermissionsForSection = async (section_ID : string | undefined) => {
-            try {
-                const {data} = await axios.get(`/api/sections/${section_ID}/get-permissions/`)
-                setAllPermissions(data);
-            } catch (e) {
-                const err = e as AxiosError;
-                console.log('navigate to 404 page');
-            }
-        }
-        getPermissionsForSection(section_id);
+        dispatch(loadPermissionsForSection(section_id));
     }, []);
 
 
@@ -94,7 +79,7 @@ function SectionPermissionManagement() {
     }
 
     const handleOnDelete = async () => {
-        const {data} = await axios.delete(`/api/permissions/${permID}`);
+        dispatch(deletePermissionForSection(permID));
         handleCloseDelete();
         setFlashMessage('Permission deleted successfully');
     }

@@ -5,14 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import PageBar from '../components/common/PageBar';
 import SectionsList from '../components/SectionsList';
-
-
-interface section {
-    id: number;
-    section_name: string;
-    section_desc: string;
-    allowed : boolean;
-}
+import { section } from '../types';
 
 
 function RoleSection() {

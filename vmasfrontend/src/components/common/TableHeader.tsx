@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
+import { sortColumn } from '../../types';
 
 interface TableHeaderProps {
     columns : {path? : string, label? : string, key? : string}[],
-    sortColumn : {path: string, order : boolean | "asc" | "desc"},
-    onSort : (sortColumn : {path: string, order : boolean | "asc" | "desc"}) => void,
+    sortColumn : sortColumn,
+    onSort : (sortColumn : sortColumn) => void,
 }
  
 

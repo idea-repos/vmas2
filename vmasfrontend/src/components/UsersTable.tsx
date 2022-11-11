@@ -1,22 +1,8 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import Table from './common/Table';
 import { Button } from 'react-bootstrap';
+import { sortColumn, user } from '../types';
 
-
-export interface user {
-    id : number;
-    username : string;
-    role : string;
-    lastlogin: Date | string;
-    status : string;
-    is_active: boolean | string;
-}
-
-export interface sortColumn {
-    path: string,
-    order : boolean | "asc" | "desc"
-}
 
 interface UserTableProps {
     users : user[],
@@ -41,7 +27,7 @@ function UsersTable({users, sortColumn, onSort, openModalForDelete} : UserTableP
             label:'Last Login'
         },
         {   
-            path:'is_active', 
+            path:'status', 
             label:'Status'
         },
         {

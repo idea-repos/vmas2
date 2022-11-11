@@ -3,24 +3,26 @@ import React, { FormEvent, useEffect, useState } from 'react';
 import PageBar from '../components/common/PageBar';
 import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import CustomModal from '../components/common/CustomModal';
-import { AxiosError } from 'axios';
-import RoleTable, { role } from '../components/RoleTable';
+import RoleTable from '../components/RoleTable';
 import SearchBox from '../components/common/SearchBox';
 import _ from 'lodash';
 import { paginate } from '../utils/paginate';
 import Pagination from '../components/common/Pagination';
 import Alert  from 'react-bootstrap/Alert';
 import ShowEntries from '../components/common/ShowEntries';
+import { role, sortColumn } from '../types';
+import { useDispatch, useSelector } from 'react-redux';
+import { createRole, deleteRole, loadRoles, updateRole } from '../store/roles';
 
 
-const GET_ROLES_URL = '/api/roles/'
 const USER_REPORTING_TO = ''
 const NEW_ROLE_ID = 0
 const DEFAULT_ITEM_PER_PAGE = 5
-interface sortColumn {path:string, order : boolean | "asc" | "desc"};
 
 function RoleManagement () {
 
+    const dispatch = useDispatch();
+    const fetchRoles : role[] = useSelector((state : any) => state.entities.roles.list);
     const [show, setShow] = useState(false);
     
     const handleClose = () => {
@@ -40,7 +42,6 @@ function RoleManagement () {
     const [roleId, setRoleId] = useState(NEW_ROLE_ID);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [pageSize, setPageSize] = useState<number>(DEFAULT_ITEM_PER_PAGE);
-    const [allRole, setAllRole] = useState<role[]>([]);
     const [reports_to, setUserReportTo] = useState(USER_REPORTING_TO)
     const [validated, setValidated] = useState(false);
     const [errResponse, setErrResponse] = useState('');
@@ -48,44 +49,27 @@ function RoleManagement () {
     const [searchQuery, setSearchQuery] = useState('');
     const [flashMessage, setFlashMessage] = useState("");
 
-    const handleSubmit = async (event : FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (event : FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
             event.stopPropagation();
         } else {
-            try {
-                if (roleId === 0) {
-                        const {data} = await axios.post(GET_ROLES_URL, JSON.stringify({name, reports_to}));
-                        setAllRole([...allRole, data])
-                        setFlashMessage('New Role Created');
-                        handleClose()
-                } else {
-                        const EDIT_ROLE_URL = `${GET_ROLES_URL}${roleId}/`
-                        const {data} = await axios.put(EDIT_ROLE_URL, JSON.stringify({name, reports_to}));
-                        setAllRole(allRole.map(role => {
-                            if (role.id == data.id) {
-                                return data
-                            }
-                            return role
-                        }))
-                        handleClose()
-                        setFlashMessage('Role Updated');
-                    } 
-            } catch (e) {
-                const err = e as AxiosError;
-                if (err.response?.status == 400)
-                    setErrResponse('Role already exists');
-            }
+            if (roleId === 0) {
+                dispatch(createRole({name, reports_to}))
+                setFlashMessage('New Role Created');
+                handleClose()
+            } else {
+                dispatch(updateRole(roleId, {name, reports_to}))
+                handleClose()
+                setFlashMessage('Role Updated');
+            } 
         }
         setValidated(true);
     };
 
-    const handleOnDelete = async (e : React.FormEvent) => {
-        e.preventDefault();
-        const DEL_ROLE_URL = `${GET_ROLES_URL}${roleId}/`;
-        const {data} = await axios.delete(DEL_ROLE_URL);
-        setAllRole(allRole.filter(role => role.id !== roleId))
+    const handleOnDelete = (e : React.FormEvent) => {
+        dispatch(deleteRole(roleId));
         handleCloseDelete()
         setFlashMessage('Role Deleted');
     }
@@ -116,18 +100,15 @@ function RoleManagement () {
     }
 
     useEffect(() => {
-        const getRoles = async () => {
-            const {data} = await axios.get(GET_ROLES_URL)
-            setAllRole(data)
-        }
-        getRoles();
+        // enhance performance (use memoize, callBack fn here)
+        dispatch(loadRoles());
     }, [])
 
     const getPageData = () => {
-        let filtered = allRole;
+        let filtered = fetchRoles;
         
         if (searchQuery) {
-            filtered = allRole.filter(role => role.name.toLowerCase().startsWith(searchQuery.toLowerCase()));
+            filtered = filtered.filter(role => role.name.toLowerCase().startsWith(searchQuery.toLowerCase()));
         } 
 
         const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
@@ -217,10 +198,10 @@ function RoleManagement () {
 
                             <Form.Group className="mb-3" controlId="reportTo">
                                 <InputGroup>
-                                    <InputGroup.Text id="inputGroupPrepend">Roles</InputGroup.Text>
+                                    <InputGroup.Text id="inputGroupPrepend">Report To</InputGroup.Text>
                                     <Form.Select value={reports_to || ''} onChange={ e => {setUserReportTo(e.target.value)}}>
                                         <option value=''></option>
-                                        {allRole.map(role => <option  key={role.id} value={role.id}>{role.name}</option>)}
+                                        {fetchRoles.map(role => <option  key={role.id} value={role.id}>{role.name}</option>)}
                                     </Form.Select>
                                 </InputGroup>
                             </Form.Group>

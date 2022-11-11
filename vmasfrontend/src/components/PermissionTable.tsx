@@ -1,16 +1,7 @@
 import { Button } from 'react-bootstrap';
+import { sortColumn, permission } from '../types';
 import Table from './common/Table';
 
-export interface permission {
-    id : number;
-    perm_section : string,
-    perms_title : string,
-}
-
-interface sortColumn {
-    path: string,
-    order : boolean | "asc" | "desc"
-}
 
 interface RoleTableProps {
     permissions : permission[],

@@ -8,18 +8,20 @@ import PageBar from '../components/common/PageBar';
 import Pagination from '../components/common/Pagination';
 import SearchBox from '../components/common/SearchBox';
 import ShowEntries from '../components/common/ShowEntries';
-import SectionTable, { section, sortColumn } from '../components/SectionTable';
+import SectionTable from '../components/SectionTable';
 import { paginate } from '../utils/paginate';
+import { section, sortColumn } from '../types';
+import { useDispatch, useSelector } from 'react-redux';
+import { createSection, deleteSection, loadSections, updateSection } from '../store/sections';
 
-
-
-const SECTION_URL = '/api/sections/'
 
 function SectionManagement() {
     
+    const dispatch = useDispatch();
+    const fetchSections : section[] = useSelector((state:any) => state.entities.sections.list);
+
     const [sectionID, setSectionID] = useState(0);
     const [pageSize, setPageSize] = useState(5);
-    const [allSections, setAllSections] = useState<section[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [section_name, setSectionName] = useState('');
     const [section_desc, setSectionDesc] = useState('');
@@ -47,14 +49,18 @@ function SectionManagement() {
         if (form.checkValidity() === false) {
             e.stopPropagation();
         } else {
+
+            /*
+                will remove try catch in the future instead we modify the api call
+                if will auto detech wheather call is POST or PUT
+            */
             try {
                 if (sectionID === 0) {
-                    const {data} = await axios.post(SECTION_URL, JSON.stringify({section_name, section_desc}));
+                    dispatch(createSection({section_name, section_desc}));
                     setFlashMessage('Section Added successfully');
                     handleClose()
                 } else {
-                    const EDIT_SECTION_URL = `${SECTION_URL}${sectionID}/`;
-                    const {data} = await axios.put(EDIT_SECTION_URL, JSON.stringify({section_name, section_desc}));
+                    dispatch(updateSection(sectionID, {section_name, section_desc}));
                     setFlashMessage('Section Updated successfully');
                     handleClose()
                 }
@@ -90,15 +96,14 @@ function SectionManagement() {
         setShowDelete(false)
     };
 
-    const handleDelete = async () => {
-        const DELETE_SECTION_URL = `${SECTION_URL}${sectionID}`
-        try {
-            const {data} = await axios.delete(DELETE_SECTION_URL);
-            setFlashMessage('Section Deleted Successfully');
-            handleCloseDelete();
-        } catch (e) {
-            const error = e as AxiosError;
-        }
+    const handleDelete = () => {
+        dispatch(deleteSection(sectionID));
+        /*
+        instead of flash message we ll create generic way to toast a notify inside api 
+        ie (middleware) in the future
+        */
+        setFlashMessage('Section Deleted Successfully');
+        handleCloseDelete();
     }
 
     const handlePageChange = (page : number) => {
@@ -106,18 +111,14 @@ function SectionManagement() {
     }
 
     useEffect(() => {
-        const getSections = async () => {
-            const {data} = await axios.get(SECTION_URL);
-            setAllSections(data);
-        }
-        getSections();
+        dispatch(loadSections());
     }, [])
 
     const getPageData = () => {
-        let filtered = allSections;
+        let filtered = fetchSections;
         
         if (searchQuery) {
-            filtered = allSections.filter(section => section.section_name.toLowerCase().startsWith(searchQuery.toLowerCase()));
+            filtered = fetchSections.filter(section => section.section_name.toLowerCase().startsWith(searchQuery.toLowerCase()));
         } 
 
         const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);

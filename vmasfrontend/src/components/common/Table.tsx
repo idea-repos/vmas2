@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { sortColumn } from '../UsersTable';
+import { sortColumn } from '../../types';
 import TableBody from './TableBody';
 import TableHeader from './TableHeader';
 

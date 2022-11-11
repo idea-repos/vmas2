@@ -3,7 +3,6 @@ __pycache__/
 migrations/
 env/
 .vscode
-staticData.ts
 0001_initial.py
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
