@@ -8,19 +8,11 @@ order_dict = {'asc': 1, 'desc': -1}
 
 class DataTablesServer(object):
 
-    def __init__(self, request, columns, index, collection):
+    def __init__(self, request, columns, collection):
 
         self.request = request
         self.columns = columns
-        self.index = index
         self.collection = collection
-        self.a = ''
-        self.b = ''
-
-        if request.user.is_superuser:
-            self.isSupuser = True
-        else:
-            self.isSupuser = False
 
         # values specified by the datatable for filtering, sorting, paging
         self.request_values = json.loads(request.body.decode('utf-8'))
@@ -29,12 +21,12 @@ class DataTablesServer(object):
         # self.request_values = {}
         # self.request_values["sEcho"] = "1"
         # self.request_values["iDisplayStart"] = 0
-        # self.request_values["iDisplayLength"] = 25
+        # self.request_values["iDisplayLength"] = 10
         # self.request_values["sSearch"] =  "use"
         # self.request_values["iSortCol_0"] = 1
-        # self.request_values["iSortingCols"] = 0
-        # self.request_values["sSortDir_0"] = ""
-        ###### only for testing ####### 
+        # self.request_values["iSortingCols"] = 1
+        # self.request_values["sSortDir_0"] = "desc"
+        # ###### only for testing ####### 
         # results from the db
         self.result_data = None
 
@@ -51,7 +43,7 @@ class DataTablesServer(object):
         output = {}
         output['sEcho'] = str(int(self.request_values['sEcho']))
         output['iTotalRecords'] = str(self.cardinality)
-        output['iTotalDisplayRecords'] = str(self.cardinality)
+        output['iTotalDisplayRecords'] = str(self.cardinality_filtered)
         aaData_rows = []
 
         for row in self.result_data:
@@ -82,9 +74,6 @@ class DataTablesServer(object):
         # 'mydb' is the actual name of your database
         mydb = ''
 
-        # pages has 'start' and 'length' attributes
-        pages = self.paging()
-
         # the term you entered into the datatable search
         _filter = self.filtering()
 
@@ -96,18 +85,22 @@ class DataTablesServer(object):
         db = client[str(config.DATABASE_CONFIGURATION['mongodb']['NAME'])]
         collection  = db[self.collection]
         
-        # self.result_data = collection.find()
-        # print("Result:" , self.result_data.count())
+        pages = namedtuple('pages', ['start', 'length'])
+
+        pages.start = int(self.request_values['iDisplayStart'])
+        pages.length = int(self.request_values['iDisplayLength'])
+
+        
         self.result_data = collection.find(filter = _filter,
                                            skip = pages.start,
                                            limit = pages.length,
                                            sort = sorting)
 
         # length of filtered set
-        self.cardinality_filtered = collection.find(filter = _filter).count()
-
-        # length of filtered set
-        self.cardinality = collection.find(filter = _filter).count()
+        # self.cardinality_filtered = collection.find(filter=_filter).count()
+        
+        # length of original set
+        # self.cardinality = collection.find({}).count()
         client.close()
 
     def filtering(self):
@@ -161,13 +154,3 @@ class DataTablesServer(object):
                 order.append((self.columns[column_number], order_dict[sort_direction]))
 
             return order
-
-    def paging(self):
-
-        pages = namedtuple('pages', ['start', 'length'])
-
-        if (self.request_values['iDisplayStart'] != "") and (self.request_values['iDisplayLength'] != -1):
-            pages.start = int(self.request_values['iDisplayStart'])
-            pages.length = int(self.request_values['iDisplayLength'])
-
-        return pages

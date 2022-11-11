@@ -9,8 +9,8 @@ def create_object(serializer_class,request):
         newobj.save()  
     return newobj
              
-def update_object(self,request):
-    instance = self.get_object()       
+def update_object(self,request,pk):
+    instance = self.serializer_class.Meta.model.objects.get(id=pk)     
     data = json.loads(request.body.decode('utf-8'))
 
     upd_obj = self.serializer_class(instance=instance,data=data)
@@ -18,6 +18,11 @@ def update_object(self,request):
     if upd_obj.is_valid():
         upd_obj.save()   
     return upd_obj     
+
+def delete_object(serializer,pk):
+    instance = serializer.Meta.model.objects.get(id=pk)
+    instance.delete()
+    return "success"
 
 def getuserperms(user, level):
     
