@@ -143,7 +143,7 @@ class UserAddUpdateDelete(ModelViewSet):
     
     queryset = {}
     serializer_class = UserSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     
     def list(self, request):
         columns = ["id", "username", "user_role", "last_login", "status"]
@@ -337,7 +337,7 @@ class SectionAddUpdateDelete(ModelViewSet):
 class PermissionAddUpdateDelete(ModelViewSet):
     queryset = {}
     serializer_class = PermissionSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     
     def list(self, request):
         columns = ["id", "perm_section", "perms_title"]
