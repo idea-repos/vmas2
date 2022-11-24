@@ -6,7 +6,8 @@ from .serializers import GroupSerializer, PermissionSerializer, UserSerializer, 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from .models import Group, Section, User, Permission
-from .utils import create_object, getuserperms, update_object, getperms
+from .datatable import DataTablesServer
+from .utils import create_object, getuserperms, update_object, delete_object,getperms
 from django.contrib.auth.hashers import make_password
 from rest_framework.decorators import action
 from rest_framework import status
@@ -20,12 +21,19 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
                             
 class GroupAddUpdateDelete(ModelViewSet):    
-    queryset = Group.objects.all()
+    queryset = {}
     serializer_class = GroupSerializer
     permission_classes = [IsAuthenticated]
+    
+    def list(self, request):
+        columns = ["id", "name", "users_count"]
+        model = self.serializer_class.Meta.model
         
+        data = DataTablesServer(request, columns, model).output_result()
+        return Response(data, status=status.HTTP_200_OK)
+ 
     def retrieve(self,request, pk=None):
-        group = self.get_object()
+        group = Group.objects.get(id=pk)
         return Response(self.serializer_class(group).data, status=status.HTTP_200_OK)
     
     def create(self,request,*args,**kwargs):
@@ -37,13 +45,14 @@ class GroupAddUpdateDelete(ModelViewSet):
            else:
               # must return same data for updating store
               return Response({'message' : "Role Created Successfully", 'data':newgroup.data},status=status.HTTP_201_CREATED)
+              #return Response("Role Created Successfully",status=status.HTTP_201_CREATED)
         except Exception as e:
             print(e)
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 
     def update(self,request,pk=None,*args,**kwargs):
         try:
-            group = update_object(self,request)
+            group = update_object(self,request,pk)
             
             if group.errors:
                return Response(group.errors,status=status.HTTP_400_BAD_REQUEST) 
@@ -55,16 +64,17 @@ class GroupAddUpdateDelete(ModelViewSet):
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     def destroy(self,request,pk=None,*args,**kwargs):
-        super(GroupAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
-        return Response("Role Deleted Successfully.", status=status.HTTP_200_OK)
-
+        if delete_object(self.serializer_class,pk) == "success":     
+           return Response("Role Deleted Successfully.", status=status.HTTP_200_OK)
+        else:
+           return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(methods=['get'], detail=True,  url_path="get-sections")
-    def get_section(self, request, *args, **kwargs):
+    def get_section(self, request, pk=None, *args, **kwargs):
         
         sections= Section.objects.values()
 
-        group = self.get_object()
+        group = Group.objects.get(id=pk)
         group_sections = group.sections.values()
         
         for section in sections:
@@ -76,7 +86,7 @@ class GroupAddUpdateDelete(ModelViewSet):
     @action(methods=['put'], detail=True,  url_path="update-sections")
     def update_section(self, request, pk=None, *args, **kwargs):
         try:
-            instance = self.get_object()
+            instance = Group.objects.get(id=pk)
             data = json.loads(request.body.decode('utf-8'))
                 
             section = self.serializer_class(instance=instance,data=data)
@@ -91,9 +101,9 @@ class GroupAddUpdateDelete(ModelViewSet):
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(methods=['get'], detail=True,  url_path="get-permissions")
-    def get_permission(self, request,*args, **kwargs):
+    def get_permission(self, request, pk=None, *args, **kwargs):
         try:
-            group = self.get_object()
+            group = Group.objects.get(id=pk)
             group_sections = group.sections.values()
             group_perms = group.permissions.values()
             
@@ -115,9 +125,9 @@ class GroupAddUpdateDelete(ModelViewSet):
         
     
     @action(methods=['put'], detail=True,  url_path="update-permissions")
-    def update_permission(self, request,*args, **kwargs):
+    def update_permission(self, request, pk=None, *args, **kwargs):
         try:
-            instance = self.get_object()
+            instance = Group.objects.get(id=pk)
             data = json.loads(request.body.decode('utf-8'))
                 
             permission = self.serializer_class(instance=instance,data=data)
@@ -134,12 +144,20 @@ class GroupAddUpdateDelete(ModelViewSet):
 
 class UserAddUpdateDelete(ModelViewSet):    
     
-    queryset = User.objects.all()
+    queryset = {}
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    
+    def list(self, request):
+        columns = ["id", "username", "user_role", "last_login", "status"]
+        model = self.serializer_class.Meta.model
+        
+        data = DataTablesServer(request, columns, model).output_result()
+        return Response(data, status=status.HTTP_200_OK)
+ 
           
     def retrieve(self,request, pk=None):
-        user = self.get_object()
+        user = User.objects.get(id=pk)
         return Response(self.serializer_class(user).data, status=status.HTTP_200_OK)
     
     def create(self,request,*args,**kwargs):
@@ -162,12 +180,12 @@ class UserAddUpdateDelete(ModelViewSet):
         
     def update(self,request,pk=None,*args,**kwargs):
         try:
-            instance = self.get_object()
+            instance = User.objects.get(id=pk)
             
             data = json.loads(request.body.decode('utf-8'))
 
             user = self.serializer_class(instance=instance,data=data,partial=True)
-            
+
             if user.is_valid():
                 if user.validated_data.get('password'):
                     password = make_password(user.validated_data.get('password'))
@@ -188,10 +206,11 @@ class UserAddUpdateDelete(ModelViewSet):
         data = json.loads(request.body.decode('utf-8'))
 
         if data["hard_delete"]:
-           super(UserAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
+           instance = User.objects.get(id=pk)
+           instance.delete()
            return Response("User Deleted Permanently.", status=status.HTTP_200_OK)  
         else:
-           instance = self.get_object()
+           instance = User.objects.get(id=pk)
            context = {'status': 0}
            
            user = self.serializer_class(instance=instance,data=context,partial=True)
@@ -203,9 +222,9 @@ class UserAddUpdateDelete(ModelViewSet):
     
     
     @action(methods=['get'], detail=True,  url_path="get-permissions")
-    def get_permission(self, request,*args, **kwargs):
+    def get_permission(self, request, pk=None, *args, **kwargs):
         try:
-            permissions = getuserperms(self.get_object(), "permissions")
+            permissions = getuserperms(User.objects.get(id=pk), "permissions")
             serializer = UserPermSerializer(permissions, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -213,9 +232,9 @@ class UserAddUpdateDelete(ModelViewSet):
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     @action(methods=['put'], detail=True,  url_path="update-permissions")
-    def update_permission(self, request,*args, **kwargs):
+    def update_permission(self, request, pk=None, *args, **kwargs):
         try:
-            instance = self.get_object()
+            instance = User.objects.get(id=pk)
             data = json.loads(request.body.decode('utf-8'))
                 
             permission = self.serializer_class(instance=instance,data=data)
@@ -230,7 +249,7 @@ class UserAddUpdateDelete(ModelViewSet):
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class ReportingOfficers(ModelViewSet):
-    queryset = User.objects.all()
+    queryset = {}
     serializer_class = ReportingOfficerSerializer
     permission_classes = [IsAuthenticated]
     
@@ -244,7 +263,7 @@ class ReportingOfficers(ModelViewSet):
         return Response(self.serializer_class(users, many=True).data, status=status.HTTP_200_OK)
     
 class UserPermsForSection(ModelViewSet):
-    queryset = Permission.objects.all()
+    queryset = {}
     serializer_class = SectionPermSerializer
     permission_classes = [IsAuthenticated]
     
@@ -266,12 +285,19 @@ class UserPermsForSection(ModelViewSet):
         return Response(self.serializer_class(perms, many=True).data, status=status.HTTP_200_OK)
        
 class SectionAddUpdateDelete(ModelViewSet):
-    queryset = Section.objects.all()
+    queryset = {}
     serializer_class = SectionSerializer
     permission_classes = [IsAuthenticated]
+    
+    def list(self, request):
+        columns = ["id", "section_name", "section_desc"]
+        model = self.serializer_class.Meta.model
+        
+        data = DataTablesServer(request, columns, model).output_result()
+        return Response(data, status=status.HTTP_200_OK)
         
     def retrieve(self,request, pk=None):
-        section = self.get_object()
+        section = Section.objects.get(id=pk)
         return Response(self.serializer_class(section).data, status=status.HTTP_200_OK)
     
     def create(self,request,*args,**kwargs):
@@ -288,7 +314,7 @@ class SectionAddUpdateDelete(ModelViewSet):
         
     def update(self,request,pk=None,*args,**kwargs):
         try:
-            section = update_object(self,request)
+            section = update_object(self,request,pk)
             
             if section.errors:
                return Response(section.errors,status=status.HTTP_400_BAD_REQUEST) 
@@ -299,22 +325,32 @@ class SectionAddUpdateDelete(ModelViewSet):
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     def destroy(self,request,pk=None,*args,**kwargs):
-        super(SectionAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
-        return Response("Section Deleted Successfully.", status=status.HTTP_200_OK)
-    
+        if delete_object(self.serializer_class,pk) == "success":     
+           return Response("Section Deleted Successfully.", status=status.HTTP_200_OK)
+        else:
+           return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+       
+       
     @action(methods=['get'], detail=True,  url_path="get-permissions")
-    def get_permission(self, request, *args, **kwargs):
-        permissions= Permission.objects.filter(section_id=self.get_object())
+    def get_permission(self, request, pk=None, *args, **kwargs):
+        permissions= Permission.objects.filter(section_id=Section.objects.get(id=pk))
         serializer = PermissionSerializer(permissions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
                
 class PermissionAddUpdateDelete(ModelViewSet):
-    queryset = Permission.objects.all()
+    queryset = {}
     serializer_class = PermissionSerializer
     permission_classes = [IsAuthenticated]
+    
+    def list(self, request):
+        columns = ["id", "perm_section", "perms_title"]
+        model = self.serializer_class.Meta.model
+        
+        data = DataTablesServer(request, columns, model).output_result()
+        return Response(data, status=status.HTTP_200_OK)
         
     def retrieve(self,request, pk=None):
-        permission = self.get_object()
+        permission = Permission.objects.get(id=pk)
         return Response(self.serializer_class(permission).data, status=status.HTTP_200_OK)
            
     def create(self,request,pk=None,*args,**kwargs):
@@ -331,7 +367,7 @@ class PermissionAddUpdateDelete(ModelViewSet):
         
     def update(self,request,pk=None,*args,**kwargs):
         try:
-            perm = update_object(self,request)
+            perm = update_object(self,request,pk)
             
             if perm.errors:
                return Response(perm.errors,status=status.HTTP_400_BAD_REQUEST) 
@@ -342,7 +378,16 @@ class PermissionAddUpdateDelete(ModelViewSet):
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def destroy(self,request,pk=None,*args,**kwargs):
+<<<<<<< HEAD
         super(PermissionAddUpdateDelete, self).destroy(request,pk,*args,**kwargs)
         return Response({'message' : "Permission Deleted Successfully.", 'data':pk}, status=status.HTTP_200_OK)
+=======
+        if delete_object(self.serializer_class,pk) == "success":     
+           return Response("Permission Deleted Successfully.", status=status.HTTP_200_OK)
+        else:
+           return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+       
+       
+>>>>>>> 78c080c430f2b795b82ae4b595b5751ea641da55
     
     

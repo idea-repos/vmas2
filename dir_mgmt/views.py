@@ -11,17 +11,16 @@ from .datatable import DataTablesServer
 
 # Create your views here.
                    
-class TargetAddUpdateDelete(ModelViewSet):    
-    queryset = TargetTags.objects.all()  
+class TargetAddUpdateDelete(ModelViewSet):     
+    queryset = {}
     serializer_class = TargetSerializer
     permission_classes = [IsAuthenticated]
        
     def list(self, request):
-        columns = ["_id", "name", "created_on"]
-        index_column = "_id"
-        collection = "Target_tags"
+        columns = self.serializer_class.Meta.fields
+        collection = self.serializer_class.Meta.model._meta.db_table
         
-        data = DataTablesServer(request, columns, index_column, collection).output_result()
+        data = DataTablesServer(request, columns, collection).output_result()
         return Response(data, status=status.HTTP_200_OK)
  
     def retrieve(self,request, pk=None):
@@ -56,7 +55,7 @@ class TargetAddUpdateDelete(ModelViewSet):
             return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     def destroy(self,request,pk=None,*args,**kwargs):
-        if delete_object(pk) == "success":     
+        if delete_object(TargetTagsSerializer,pk) == "success":     
            return Response("Target Deleted Successfully.", status=status.HTTP_200_OK)
         else:
            return Response("Exception Occured!!!",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
